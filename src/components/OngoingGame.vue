@@ -114,20 +114,21 @@
             </div>
 
             <div class="form-group">
-              <label>超吃張數：</label>
+              <label class="dynamic-label" @click="toggleTricksType">
+                <span class="label-text"
+                  >{{ isExtraTricks ? "超吃張數" : "缺少張數" }} <i class="bi bi-arrow-repeat"></i
+                ></span>
+              </label>
               <input
                 type="number"
                 v-model.number="extraTricks"
                 class="form-input"
-                placeholder="正數表示超吃，負數表示缺少"
+                :placeholder="isExtraTricks ? '0-7 張' : '0-16 張'"
+                :min="0"
+                :max="isExtraTricks ? 7 : 16"
                 required
               />
             </div>
-          </div>
-
-          <div class="tricks-help">
-            <p>• 正值：超吃張數（例如：+2 表示超吃 2 張）</p>
-            <p>• 負值：缺少張數（例如：-1 表示缺少 1 張）</p>
           </div>
 
           <div class="score-preview" v-if="canPreview">
@@ -211,12 +212,14 @@
                 </div>
 
                 <div class="form-group">
-                  <label>超吃張數：</label>
+                  <label>額外張數：</label>
                   <input
                     type="number"
                     v-model.number="editRoundData.extraTricks"
                     class="form-input"
-                    placeholder="正數表示超吃，負數表示缺少"
+                    placeholder="-16 到 +7 張"
+                    min="-16"
+                    max="7"
                     required
                   />
                 </div>
@@ -305,6 +308,7 @@ const authStore = useAuthStore();
 const napoleonId = ref<string>("");
 const secretaryId = ref<string>("");
 const extraTricks = ref(0);
+const isExtraTricks = ref(true); // true: 超吃張數, false: 缺少張數
 const error = ref("");
 const loading = ref(false);
 
@@ -357,6 +361,16 @@ const canSubmit = computed(() => {
   if (!gameStore.currentGame) return false;
   if (!napoleonId.value) return false;
   if (!secretaryId.value) return false;
+
+  // 驗證額外張數範圍
+  if (isExtraTricks.value) {
+    // 超吃張數：0-7
+    if (extraTricks.value < 0 || extraTricks.value > 7) return false;
+  } else {
+    // 缺少張數：0-16（會自動轉為負數）
+    if (extraTricks.value < 0 || extraTricks.value > 16) return false;
+  }
+
   return true;
 });
 
@@ -401,18 +415,30 @@ const previewScores = computed(() => {
   const isDictator = secretaryId.value === "none";
   const secId = isDictator ? napoleonId.value : secretaryId.value;
 
+  // 計算實際的 extraTricks 值
+  let actualExtraTricks = extraTricks.value;
+  if (!isExtraTricks.value) {
+    actualExtraTricks = -Math.abs(extraTricks.value);
+  }
+
   try {
     return calculateRoundScores({
       contractType: isDictator ? "dictator" : "standard",
       napoleonId: napoleonId.value,
       secretaryId: secId,
-      extraTricks: extraTricks.value,
+      extraTricks: actualExtraTricks,
       playerIds: gameStore.currentGame.players,
     });
   } catch {
     return {};
   }
 });
+
+function toggleTricksType() {
+  isExtraTricks.value = !isExtraTricks.value;
+  // 切換時重置輸入值
+  extraTricks.value = 0;
+}
 
 function getUserName(userId: string): string {
   const user = gameStore.users.find((u) => u.uid === userId);
@@ -463,11 +489,18 @@ async function submitRound() {
     const isDictator = secretaryId.value === "none";
     const secId = isDictator ? napoleonId.value : secretaryId.value;
 
+    // 根據當前模式調整 extraTricks 的值
+    let finalExtraTricks = extraTricks.value;
+    if (!isExtraTricks.value) {
+      // 如果是缺少張數模式，自動加上負號
+      finalExtraTricks = -Math.abs(extraTricks.value);
+    }
+
     await gameStore.addRound({
       napoleonId: napoleonId.value,
       secretaryId: secId,
       contractType: isDictator ? "dictator" : "standard",
-      extraTricks: extraTricks.value,
+      extraTricks: finalExtraTricks,
     });
 
     // 重置表單
@@ -820,6 +853,31 @@ async function saveEditBetAmount() {
   font-weight: 600;
   color: #333;
   font-size: 14px;
+}
+
+.dynamic-label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.3s ease;
+}
+
+.dynamic-label:hover {
+  color: #667eea;
+}
+
+.dynamic-label .label-text {
+  flex: 1;
+}
+
+.dynamic-label i {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.dynamic-label:hover i {
+  opacity: 1;
 }
 
 .form-select,

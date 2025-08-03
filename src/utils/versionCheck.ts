@@ -1,5 +1,5 @@
 // 版本檢查工具
-export const APP_VERSION = "v1.3.1";
+export const APP_VERSION = "v1.3.2";
 
 export function checkForUpdates() {
   if ("serviceWorker" in navigator) {

@@ -44,9 +44,8 @@ service cloud.firestore {
       
       // 遊戲回合子集合規則
       match /rounds/{roundId} {
-        // 只有遊戲參與者可以讀取回合資料
-        allow read: if request.auth != null && 
-          request.auth.uid in get(/databases/$(database)/documents/games/$(gameId)).data.players;
+        // 只要是已登入用戶就可以讀取回合資料
+        allow read: if request.auth != null;
         
         // 只有遊戲參與者可以新增回合
         allow create: if request.auth != null && 
