@@ -796,7 +796,7 @@ function goToOngoingGame() {
 }
 
 .score-item .money {
-  font-size: 14px;
+  font-size: 16px;
   color: #666;
 }
 
@@ -956,14 +956,15 @@ function goToOngoingGame() {
 }
 
 .leaderboard-table th {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: transparent;
+  color: #333;
   font-weight: 600;
   font-size: 14px;
+  border-bottom: 2px solid #e1e5e9;
 }
 
 .leaderboard-table th.player-name {
-  color: #ffffff;
+  color: #333;
 }
 
 .leaderboard-table th.money,
@@ -1046,7 +1047,7 @@ function goToOngoingGame() {
 
 .leaderboard-table .money {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .leaderboard-table .money.positive {
@@ -1234,7 +1235,7 @@ function goToOngoingGame() {
   }
 
   .leaderboard-table .money {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .game-info {
