@@ -4,6 +4,8 @@ import { useGameStore } from "@/stores/gameStore";
 import { useRouter } from "vue-router";
 import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import Swal from "sweetalert2";
+import PWAUpdatePrompt from "@/components/PWAUpdatePrompt.vue";
+import { forceUpdate } from "@/utils/versionCheck";
 
 const authStore = useAuthStore();
 const gameStore = useGameStore();
@@ -65,6 +67,67 @@ function openChangePassword() {
   showChangePassword.value = true;
   showUserMenu.value = false;
   error.value = "";
+}
+
+async function checkForUpdates() {
+  const result = await Swal.fire({
+    title: "版本更新",
+    text: "確定要檢查並更新到最新版本嗎？這將會刷新頁面。",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "立即更新",
+    cancelButtonText: "取消",
+    confirmButtonColor: "#667eea",
+    cancelButtonColor: "#6c757d",
+    customClass: {
+      container: "swal-high-z-index",
+    },
+  });
+
+  if (result.isConfirmed) {
+    try {
+      // 清除本地緩存
+      if ("caches" in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+      }
+
+      // 清除 localStorage 中的 PWA 相關數據
+      localStorage.removeItem("pwa-installed");
+      localStorage.removeItem("pwa-update-dismissed");
+
+      // 強制更新 Service Worker
+      forceUpdate();
+
+      // 顯示更新中提示
+      Swal.fire({
+        title: "更新中...",
+        text: "正在更新到最新版本，請稍候",
+        icon: "info",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        customClass: {
+          container: "swal-high-z-index",
+        },
+      });
+
+      // 延遲重新載入頁面
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("更新失敗:", error);
+      Swal.fire({
+        title: "更新失敗",
+        text: "更新過程中發生錯誤，請稍後再試",
+        icon: "error",
+        confirmButtonColor: "#667eea",
+        customClass: {
+          container: "swal-high-z-index",
+        },
+      });
+    }
+  }
 }
 
 async function updateDisplayName() {
@@ -267,7 +330,7 @@ onUnmounted(() => {
       <div class="nav-container">
         <div class="nav-top-row">
           <div class="nav-brand">
-            <h1>拿破麻計分系統 <span class="version">v1.0.0</span></h1>
+            <h1>拿破麻計分系統 <span class="version">v1.2.0</span></h1>
           </div>
           <div class="nav-user">
             <div class="user-menu-container">
@@ -289,6 +352,10 @@ onUnmounted(() => {
                 <button @click="openChangePassword" class="dropdown-item">
                   <i class="bi bi-lock-fill"></i>
                   更改密碼
+                </button>
+                <button @click="checkForUpdates" class="dropdown-item">
+                  <i class="bi bi-arrow-clockwise"></i>
+                  版本更新
                 </button>
                 <div class="dropdown-divider"></div>
                 <button @click="openLogoutConfirm" class="dropdown-item logout">
@@ -346,6 +413,8 @@ onUnmounted(() => {
 
     <!-- 更改密碼對話框 -->
     <div v-if="showChangePassword" class="modal-overlay" @click="closeModals">
+      <!-- PWA 更新提示 -->
+      <PWAUpdatePrompt />
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>更改密碼</h3>

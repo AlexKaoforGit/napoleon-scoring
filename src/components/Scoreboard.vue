@@ -96,6 +96,14 @@
             </div>
             <div class="game-actions">
               <button class="btn-secondary">查看詳情</button>
+              <button
+                v-if="isAdmin"
+                @click.stop="deleteGame(game)"
+                class="btn-danger"
+                title="刪除牌局"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -207,6 +215,7 @@ import { useRouter } from "vue-router";
 import { useGameStore } from "@/stores/gameStore";
 import { useAuthStore } from "@/stores/authStore";
 import type { Game, Round } from "@/stores/gameStore";
+import Swal from "sweetalert2";
 
 const router = useRouter();
 const gameStore = useGameStore();
@@ -214,6 +223,7 @@ const authStore = useAuthStore();
 
 const selectedGame = ref<Game | null>(null);
 const selectedGameRounds = ref<Round[]>([]);
+const isAdmin = ref(false);
 
 const currentGame = computed(() => gameStore.currentGame);
 const currentRounds = computed(() => gameStore.currentRounds);
@@ -255,6 +265,10 @@ onMounted(async () => {
 
       // 載入所有歷史牌局的回合數
       await loadAllGameRoundsCount();
+
+      // 檢查管理員權限
+      const userRole = await authStore.getUserRole();
+      isAdmin.value = userRole === "admin";
     } catch (error) {
       console.error("載入資料失敗:", error);
     }
@@ -377,6 +391,51 @@ function closeGameDetails() {
 
 function goToGameSetup() {
   router.push("/setup");
+}
+
+async function deleteGame(game: Game) {
+  const result = await Swal.fire({
+    title: "確認刪除",
+    text: `確定要刪除這場牌局嗎？此操作無法復原。\n賭注: $${game.betAmount}\n玩家: ${game.players
+      .map((id) => getUserName(id))
+      .join(", ")}`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "確定刪除",
+    cancelButtonText: "取消",
+    confirmButtonColor: "#dc3545",
+    cancelButtonColor: "#6c757d",
+    customClass: {
+      container: "swal-high-z-index",
+    },
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await gameStore.deleteGame(game.id);
+
+      Swal.fire({
+        title: "刪除成功",
+        text: "牌局已成功刪除",
+        icon: "success",
+        confirmButtonColor: "#667eea",
+        customClass: {
+          container: "swal-high-z-index",
+        },
+      });
+    } catch (error: any) {
+      console.error("刪除遊戲失敗:", error);
+      Swal.fire({
+        title: "刪除失敗",
+        text: error.message || "刪除遊戲時發生錯誤",
+        icon: "error",
+        confirmButtonColor: "#667eea",
+        customClass: {
+          container: "swal-high-z-index",
+        },
+      });
+    }
+  }
 }
 
 function goToOngoingGame() {
@@ -577,6 +636,27 @@ function goToOngoingGame() {
 .btn-secondary:hover {
   background: #e9ecef;
   transform: translateY(-2px);
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+  border-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
 
 /* 對話框樣式 */
