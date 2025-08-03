@@ -15,6 +15,7 @@ const router = useRouter();
 const showUserMenu = ref(false);
 const showEditProfile = ref(false);
 const showChangePassword = ref(false);
+const showMobileMenu = ref(false);
 
 // 編輯資料相關
 const newDisplayName = ref("");
@@ -52,6 +53,14 @@ async function openLogoutConfirm() {
 function toggleUserMenu() {
   showUserMenu.value = !showUserMenu.value;
   if (showUserMenu.value) {
+    // 初始化編輯資料
+    newDisplayName.value = authStore.user?.displayName || "";
+  }
+}
+
+function toggleMobileMenu() {
+  showMobileMenu.value = !showMobileMenu.value;
+  if (showMobileMenu.value) {
     // 初始化編輯資料
     newDisplayName.value = authStore.user?.displayName || "";
   }
@@ -346,6 +355,7 @@ async function changePassword() {
 function closeModals() {
   showEditProfile.value = false;
   showChangePassword.value = false;
+  showMobileMenu.value = false;
   error.value = "";
   newDisplayName.value = "";
   currentPassword.value = "";
@@ -380,6 +390,9 @@ function handleClickOutside(event: Event) {
   const target = event.target as HTMLElement;
   if (!target.closest(".user-menu-container")) {
     showUserMenu.value = false;
+  }
+  if (!target.closest(".mobile-menu-container")) {
+    showMobileMenu.value = false;
   }
 }
 
@@ -422,10 +435,11 @@ onUnmounted(() => {
       <div class="nav-container">
         <div class="nav-top-row">
           <div class="nav-brand">
-            <h1>拿破麻計分系統 <span class="version">v1.3.3</span></h1>
+            <h1>拿破麻計分系統 <span class="version">v1.3.4</span></h1>
           </div>
           <div class="nav-user">
-            <div class="user-menu-container">
+            <!-- 桌面版用戶選單 -->
+            <div class="user-menu-container desktop-only">
               <button
                 @click="toggleUserMenu"
                 class="user-menu-btn"
@@ -456,14 +470,99 @@ onUnmounted(() => {
                 </button>
               </div>
             </div>
+
+            <!-- 手機版漢堡選單 -->
+            <div class="mobile-menu-container mobile-only">
+              <button
+                @click="toggleMobileMenu"
+                class="hamburger-btn"
+                :class="{ active: showMobileMenu }"
+              >
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+              </button>
+            </div>
           </div>
         </div>
-        <div class="nav-menu">
+
+        <!-- 桌面版導航選單 -->
+        <div class="nav-menu desktop-only">
           <router-link to="/setup" class="nav-link">新牌局</router-link>
           <router-link to="/ongoing" class="nav-link">進行中</router-link>
           <router-link to="/scoreboard" class="nav-link">歷史戰績</router-link>
           <router-link to="/rules" class="nav-link">計分規則</router-link>
           <router-link v-if="isAdmin" to="/admin-setup" class="nav-link">管理員設定</router-link>
+        </div>
+      </div>
+
+      <!-- 手機版漢堡選單內容 -->
+      <div v-if="showMobileMenu" class="mobile-menu-overlay" @click="closeModals">
+        <div class="mobile-menu-content" @click.stop>
+          <div class="mobile-menu-header">
+            <div class="mobile-user-info">
+              <div class="mobile-user-name">{{ getUserDisplayName() || authStore.user.email }}</div>
+              <div v-if="isAdmin" class="mobile-admin-badge">管理員</div>
+            </div>
+            <button @click="closeModals" class="mobile-close-btn">&times;</button>
+          </div>
+
+          <div class="mobile-menu-sections">
+            <!-- 導航連結 -->
+            <div class="mobile-menu-section">
+              <h3>功能選單</h3>
+              <router-link to="/setup" class="mobile-menu-item" @click="closeModals">
+                <i class="bi bi-plus-circle"></i>
+                新牌局
+              </router-link>
+              <router-link to="/ongoing" class="mobile-menu-item" @click="closeModals">
+                <i class="bi bi-play-circle"></i>
+                進行中
+              </router-link>
+              <router-link to="/scoreboard" class="mobile-menu-item" @click="closeModals">
+                <i class="bi bi-trophy"></i>
+                歷史戰績
+              </router-link>
+              <router-link to="/rules" class="mobile-menu-item" @click="closeModals">
+                <i class="bi bi-book"></i>
+                計分規則
+              </router-link>
+              <router-link
+                v-if="isAdmin"
+                to="/admin-setup"
+                class="mobile-menu-item"
+                @click="closeModals"
+              >
+                <i class="bi bi-gear"></i>
+                管理員設定
+              </router-link>
+            </div>
+
+            <!-- 用戶功能 -->
+            <div class="mobile-menu-section">
+              <h3>用戶設定</h3>
+              <button @click="openEditProfile" class="mobile-menu-item">
+                <i class="bi bi-person-fill"></i>
+                更改顯示名稱
+              </button>
+              <button @click="openChangePassword" class="mobile-menu-item">
+                <i class="bi bi-lock-fill"></i>
+                更改密碼
+              </button>
+              <button @click="checkForUpdates" class="mobile-menu-item">
+                <i class="bi bi-arrow-clockwise"></i>
+                版本更新
+              </button>
+            </div>
+
+            <!-- 登出 -->
+            <div class="mobile-menu-section">
+              <button @click="openLogoutConfirm" class="mobile-menu-item logout">
+                <i class="bi bi-box-arrow-right"></i>
+                登出
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
@@ -595,10 +694,10 @@ body {
   padding: 0 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   height: auto;
-  padding-top: 16px;
-  padding-bottom: 16px;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 .nav-top-row {
@@ -617,7 +716,7 @@ body {
 
 .nav-brand h1 {
   color: #333;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -628,7 +727,7 @@ body {
   font-size: 14px;
   color: #666;
   font-weight: 400;
-  align-self: flex-end;
+  align-self: center;
 }
 
 /* nav-menu 樣式已移到上面 */
@@ -913,10 +1012,186 @@ body {
   z-index: 9999 !important;
 }
 
+/* 漢堡選單樣式 */
+.hamburger-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.3s ease;
+}
+
+.hamburger-line {
+  width: 24px;
+  height: 2px;
+  background: #333;
+  transition: all 0.3s ease;
+  border-radius: 1px;
+}
+
+.hamburger-btn.active .hamburger-line:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger-btn.active .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-btn.active .hamburger-line:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* 手機版選單覆蓋層 */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mobile-menu-content {
+  width: 280px;
+  height: 100vh;
+  background: white;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.mobile-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e1e5e9;
+  background: #f8f9fa;
+}
+
+.mobile-user-info {
+  flex: 1;
+}
+
+.mobile-user-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.mobile-admin-badge {
+  background: #667eea;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.mobile-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-close-btn:hover {
+  color: #333;
+}
+
+.mobile-menu-sections {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 0;
+}
+
+.mobile-menu-section {
+  margin-bottom: 24px;
+}
+
+.mobile-menu-section h3 {
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 20px 12px 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  color: #333;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.mobile-menu-item:hover {
+  background: #f8f9fa;
+}
+
+.mobile-menu-item.logout {
+  color: #dc3545;
+}
+
+.mobile-menu-item.logout:hover {
+  background: #f8d7da;
+}
+
+.mobile-menu-item i {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+/* 響應式顯示控制 */
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .nav-container {
-    padding: 12px 20px;
-    gap: 12px;
+    padding: 16px 20px;
+    gap: 16px;
   }
 
   .nav-top-row {
@@ -926,23 +1201,24 @@ body {
   }
 
   .nav-brand h1 {
-    font-size: 16px;
+    font-size: 20px;
   }
 
   .version {
     font-size: 11px;
   }
 
-  .nav-menu {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
+  /* 響應式顯示控制 */
+  .desktop-only {
+    display: none !important;
   }
 
-  .nav-link {
-    padding: 6px 10px;
-    font-size: 13px;
+  .mobile-only {
+    display: block !important;
+  }
+
+  .nav-menu {
+    display: none;
   }
 
   .user-menu-btn {
@@ -991,8 +1267,8 @@ body {
 
 @media (max-width: 480px) {
   .nav-container {
-    padding: 8px 15px;
-    gap: 8px;
+    padding: 12px 15px;
+    gap: 12px;
   }
 
   .nav-top-row {
@@ -1000,32 +1276,42 @@ body {
   }
 
   .nav-brand h1 {
-    font-size: 14px;
+    font-size: 18px;
   }
 
   .version {
     font-size: 10px;
   }
 
-  .nav-menu {
-    gap: 6px;
+  .hamburger-btn {
+    padding: 6px;
   }
 
-  .nav-link {
-    padding: 5px 8px;
-    font-size: 12px;
+  .hamburger-line {
+    width: 20px;
+    height: 2px;
   }
 
-  .user-menu-btn {
-    padding: 6px 8px;
+  .mobile-menu-content {
+    width: 260px;
   }
 
-  .user-name {
-    font-size: 12px;
+  .mobile-menu-header {
+    padding: 16px;
   }
 
-  .dropdown-arrow {
-    font-size: 9px;
+  .mobile-user-name {
+    font-size: 14px;
+  }
+
+  .mobile-menu-item {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+
+  .mobile-menu-item i {
+    font-size: 16px;
+    width: 20px;
   }
 }
 </style>

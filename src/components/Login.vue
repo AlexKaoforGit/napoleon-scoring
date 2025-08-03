@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h2>拿破麻計分系統 <span class="version">v1.3.3</span></h2>
+      <h2>拿破麻計分系統 <span class="version">v1.3.4</span></h2>
       <form @submit.prevent="onSubmit" class="login-form">
         <div class="form-group">
           <label for="email">電子郵件</label>
@@ -140,6 +140,7 @@ function goToRegister() {
   color: #333;
   margin-bottom: 30px;
   font-size: 24px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -147,10 +148,10 @@ function goToRegister() {
 }
 
 .version {
-  font-size: 16px;
+  font-size: 12px;
   color: #666;
   font-weight: 400;
-  align-self: flex-end;
+  align-self: center;
 }
 
 .login-form {
