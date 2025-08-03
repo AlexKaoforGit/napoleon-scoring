@@ -72,10 +72,10 @@ function openChangePassword() {
 async function checkForUpdates() {
   const result = await Swal.fire({
     title: "版本更新",
-    text: "確定要檢查並更新到最新版本嗎？這將會刷新頁面。",
+    text: "確定要檢查並更新到最新版本嗎？",
     icon: "question",
     showCancelButton: true,
-    confirmButtonText: "立即更新",
+    confirmButtonText: "檢查更新",
     cancelButtonText: "取消",
     confirmButtonColor: "#667eea",
     cancelButtonColor: "#6c757d",
@@ -86,9 +86,82 @@ async function checkForUpdates() {
 
   if (result.isConfirmed) {
     try {
+      // 顯示檢查中提示
+      Swal.fire({
+        title: "檢查更新中...",
+        text: "正在檢查是否有新版本",
+        icon: "info",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        customClass: {
+          container: "swal-high-z-index",
+        },
+      });
+
+      // 檢查是否有新版本
+      let hasUpdate = false;
+      if ("serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          // 檢查更新
+          await registration.update();
+
+          // 等待一下讓更新檢查完成
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          // 檢查是否有等待中的 Service Worker
+          hasUpdate = !!registration.waiting;
+        }
+      }
+
+      if (!hasUpdate) {
+        // 沒有新版本
+        Swal.fire({
+          title: "已是最新版本",
+          text: "您目前使用的是最新版本，無需更新",
+          icon: "success",
+          confirmButtonColor: "#667eea",
+          customClass: {
+            container: "swal-high-z-index",
+          },
+        });
+        return;
+      }
+
+      // 有新版本，詢問是否要更新
+      const updateResult = await Swal.fire({
+        title: "發現新版本",
+        text: "檢測到新版本可用，是否要立即更新？",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "立即更新",
+        cancelButtonText: "稍後再說",
+        confirmButtonColor: "#667eea",
+        cancelButtonColor: "#6c757d",
+        customClass: {
+          container: "swal-high-z-index",
+        },
+      });
+
+      if (!updateResult.isConfirmed) {
+        return;
+      }
+
       // 保存當前路由路徑
       const currentPath = router.currentRoute.value.fullPath;
       sessionStorage.setItem("preUpdatePath", currentPath);
+
+      // 顯示更新中提示
+      Swal.fire({
+        title: "更新中...",
+        text: "正在更新到最新版本，請稍候",
+        icon: "info",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        customClass: {
+          container: "swal-high-z-index",
+        },
+      });
 
       // 清除本地緩存
       if ("caches" in window) {
@@ -102,18 +175,6 @@ async function checkForUpdates() {
 
       // 強制更新 Service Worker
       forceUpdate();
-
-      // 顯示更新中提示
-      Swal.fire({
-        title: "更新中...",
-        text: "正在更新到最新版本，請稍候",
-        icon: "info",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        customClass: {
-          container: "swal-high-z-index",
-        },
-      });
 
       // 延遲重新載入頁面
       setTimeout(async () => {
