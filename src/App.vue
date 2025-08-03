@@ -86,6 +86,10 @@ async function checkForUpdates() {
 
   if (result.isConfirmed) {
     try {
+      // 保存當前路由路徑
+      const currentPath = router.currentRoute.value.fullPath;
+      sessionStorage.setItem("preUpdatePath", currentPath);
+
       // 清除本地緩存
       if ("caches" in window) {
         const cacheNames = await caches.keys();
@@ -330,7 +334,7 @@ onUnmounted(() => {
       <div class="nav-container">
         <div class="nav-top-row">
           <div class="nav-brand">
-            <h1>拿破麻計分系統 <span class="version">v1.2.0</span></h1>
+            <h1>拿破麻計分系統 <span class="version">v1.3.0</span></h1>
           </div>
           <div class="nav-user">
             <div class="user-menu-container">

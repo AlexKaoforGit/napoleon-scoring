@@ -60,16 +60,36 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
 
+  // 檢查是否有更新前保存的路徑
+  const preUpdatePath = sessionStorage.getItem("preUpdatePath");
+  if (preUpdatePath && to.path === "/") {
+    // 清除保存的路徑
+    sessionStorage.removeItem("preUpdatePath");
+
+    // 如果用戶已登入，導向保存的路徑
+    if (!authStore.loading && authStore.user) {
+      next(preUpdatePath);
+      return;
+    }
+  }
+
   // 如果還在載入中，等待載入完成
   if (authStore.loading) {
     // 使用更簡單的方法等待載入完成
     const checkLoading = () => {
       if (!authStore.loading) {
-        // 載入完成後，重新檢查路由
-        if (to.meta.requiresAuth && !authStore.user) {
-          next("/");
+        // 載入完成後，檢查是否有更新前保存的路徑
+        const savedPath = sessionStorage.getItem("preUpdatePath");
+        if (savedPath && authStore.user) {
+          sessionStorage.removeItem("preUpdatePath");
+          next(savedPath);
         } else {
-          next();
+          // 載入完成後，重新檢查路由
+          if (to.meta.requiresAuth && !authStore.user) {
+            next("/");
+          } else {
+            next();
+          }
         }
       } else {
         // 如果還在載入，繼續等待
