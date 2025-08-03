@@ -117,8 +117,27 @@ async function checkForUpdates() {
 
       // 延遲重新載入頁面
       setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+        // 強制清除所有緩存並重新載入
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function (registrations) {
+            for (let registration of registrations) {
+              registration.unregister();
+            }
+          });
+        }
+
+        // 清除所有緩存
+        if ("caches" in window) {
+          caches.keys().then(function (names) {
+            for (let name of names) {
+              caches.delete(name);
+            }
+          });
+        }
+
+        // 強制重新載入頁面
+        window.location.href = window.location.href;
+      }, 1500);
     } catch (error) {
       console.error("更新失敗:", error);
       Swal.fire({

@@ -32,10 +32,31 @@ export function forceUpdate() {
       if (registration && registration.waiting) {
         // 發送更新消息
         registration.waiting.postMessage({ type: "SKIP_WAITING" });
-
-        // 重新載入頁面
-        window.location.reload();
       }
     });
   }
+
+  // 延遲重新載入頁面
+  setTimeout(() => {
+    // 強制清除所有緩存並重新載入
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+
+    // 清除所有緩存
+    if ("caches" in window) {
+      caches.keys().then(function (names) {
+        for (let name of names) {
+          caches.delete(name);
+        }
+      });
+    }
+
+    // 強制重新載入頁面
+    window.location.href = window.location.href;
+  }, 1500);
 }
