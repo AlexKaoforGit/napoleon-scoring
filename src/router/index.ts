@@ -57,55 +57,64 @@ const router = createRouter({
 });
 
 // 路由守衛
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-
-  // 檢查是否有更新前保存的路徑
-  const preUpdatePath = sessionStorage.getItem("preUpdatePath");
-  if (preUpdatePath && to.path === "/") {
-    // 清除保存的路徑
-    sessionStorage.removeItem("preUpdatePath");
-
-    // 如果用戶已登入，導向保存的路徑
-    if (!authStore.loading && authStore.user) {
-      next(preUpdatePath);
-      return;
-    }
-  }
+  const gameStore = useGameStore();
 
   // 如果還在載入中，等待載入完成
   if (authStore.loading) {
-    // 使用更簡單的方法等待載入完成
     const checkLoading = () => {
       if (!authStore.loading) {
-        // 載入完成後，檢查是否有更新前保存的路徑
-        const savedPath = sessionStorage.getItem("preUpdatePath");
-        if (savedPath && authStore.user) {
-          sessionStorage.removeItem("preUpdatePath");
-          next(savedPath);
-        } else {
-          // 載入完成後，重新檢查路由
-          if (to.meta.requiresAuth && !authStore.user) {
-            next("/");
-          } else {
-            next();
-          }
-        }
+        // 載入完成後，重新執行路由檢查
+        handleRoute(to, from, next);
       } else {
-        // 如果還在載入，繼續等待
         setTimeout(checkLoading, 100);
       }
     };
     checkLoading();
-    return; // 重要：在這裡返回，避免執行後面的 next()
+    return;
   }
 
-  // 已經載入完成，直接檢查
+  // 處理路由邏輯
+  handleRoute(to, from, next);
+});
+
+// 路由處理函數
+async function handleRoute(to: any, from: any, next: any) {
+  const authStore = useAuthStore();
+  const gameStore = useGameStore();
+
+  // 檢查是否有更新前保存的路徑
+  const preUpdatePath = sessionStorage.getItem("preUpdatePath");
+  if (preUpdatePath && to.path === "/" && authStore.user) {
+    sessionStorage.removeItem("preUpdatePath");
+    next(preUpdatePath);
+    return;
+  }
+
+  // 如果用戶已登入但訪問首頁，根據情況導向適當頁面
+  if (to.path === "/" && authStore.user) {
+    try {
+      // 檢查是否有進行中的牌局
+      const ongoingGame = await gameStore.checkUserOngoingGame(authStore.user.uid);
+      if (ongoingGame) {
+        next("/ongoing");
+      } else {
+        next("/setup");
+      }
+    } catch (error) {
+      console.error("載入當前牌局失敗:", error);
+      next("/setup");
+    }
+    return;
+  }
+
+  // 檢查需要認證的路由
   if (to.meta.requiresAuth && !authStore.user) {
     next("/");
   } else {
     next();
   }
-});
+}
 
 export default router;
