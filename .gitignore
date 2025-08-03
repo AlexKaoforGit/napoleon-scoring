@@ -28,3 +28,20 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Environment variables and sensitive data
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+
+# Firebase
+src/firebase.ts
+firebase-debug.log
+firebase-debug.*.log
+
+# IDE and editor files
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
