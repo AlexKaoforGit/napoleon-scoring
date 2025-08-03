@@ -1,0 +1,82 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 用戶集合規則
+    match /users/{userId} {
+      // 用戶可以讀取所有用戶資料（用於遊戲設定時選擇玩家）
+      allow read: if request.auth != null;
+      
+      // 用戶只能創建/修改自己的資料
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false; // 不允許刪除用戶資料
+    }
+    
+    // 遊戲集合規則
+    match /games/{gameId} {
+      // 允許任何已登入用戶讀取進行中或已結束的遊戲
+      // 也允許遊戲參與者讀取遊戲資料
+      allow read: if request.auth != null && (
+        resource.data.status == "ongoing" || 
+        resource.data.status == "finished" ||
+        request.auth.uid in resource.data.players
+      );
+      
+      // 只有遊戲參與者或管理員可以修改遊戲資料
+      allow update: if request.auth != null && (
+        request.auth.uid in resource.data.players ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
+      );
+      
+      // 任何已登入用戶都可以創建新遊戲
+      allow create: if request.auth != null && 
+        request.auth.uid in request.resource.data.players;
+      
+      // 不允許刪除遊戲
+      allow delete: if false;
+      
+      // 遊戲回合子集合規則
+      match /rounds/{roundId} {
+        // 只有遊戲參與者可以讀取回合資料
+        allow read: if request.auth != null && 
+          request.auth.uid in get(/databases/$(database)/documents/games/$(gameId)).data.players;
+        
+        // 只有遊戲參與者可以新增回合
+        allow create: if request.auth != null && 
+          request.auth.uid in get(/databases/$(database)/documents/games/$(gameId)).data.players;
+        
+        // 只有管理員可以修改或刪除回合
+        allow update, delete: if request.auth != null && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+      }
+    }
+    
+    // 保留原有的 todos 規則（如果需要）
+    match /todos/{todoId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+    
+    // 保留原有的 tags 規則（如果需要）
+    match /tags/{tagId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+    
+    // 保留原有的 articles 規則（如果需要）
+    match /articles/{articleId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email == resource.data.authorId;
+      allow create: if request.auth != null && 
+        request.auth.token.email == request.resource.data.authorId;
+    }
+    
+    // 其他集合的預設規則（拒絕所有存取）
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+} 
