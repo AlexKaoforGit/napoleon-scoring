@@ -1,5 +1,5 @@
 // 版本檢查工具
-export const APP_VERSION = "v1.3.2";
+export const APP_VERSION = "v1.3.3";
 
 export function checkForUpdates() {
   if ("serviceWorker" in navigator) {
@@ -37,26 +37,34 @@ export function forceUpdate() {
   }
 
   // 延遲重新載入頁面
-  setTimeout(() => {
-    // 強制清除所有緩存並重新載入
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+  setTimeout(async () => {
+    try {
+      // 1. 先註銷所有 Service Worker
+      if ("serviceWorker" in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
         for (let registration of registrations) {
-          registration.unregister();
+          await registration.unregister();
         }
-      });
-    }
+      }
 
-    // 清除所有緩存
-    if ("caches" in window) {
-      caches.keys().then(function (names) {
-        for (let name of names) {
-          caches.delete(name);
+      // 2. 清除所有緩存
+      if ("caches" in window) {
+        const cacheNames = await caches.keys();
+        for (let name of cacheNames) {
+          await caches.delete(name);
         }
-      });
-    }
+      }
 
-    // 強制重新載入頁面
-    window.location.href = window.location.href;
-  }, 1500);
+      // 3. 清除 localStorage 和 sessionStorage
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // 4. 強制重新導向到首頁
+      window.location.replace("/");
+    } catch (error) {
+      console.error("清理緩存失敗:", error);
+      // 如果清理失敗，直接重新導向
+      window.location.replace("/");
+    }
+  }, 2000);
 }
