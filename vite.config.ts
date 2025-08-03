@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
       includeAssets: ["card-game.png", "favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
       manifest: {
         name: "拿破麻計分系統",

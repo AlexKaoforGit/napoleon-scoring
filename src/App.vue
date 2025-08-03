@@ -112,29 +112,57 @@ async function checkForUpdates() {
       if ("serviceWorker" in navigator) {
         const registration = await navigator.serviceWorker.getRegistration();
         if (registration) {
-          // 檢查更新
+          // 強制檢查更新
           await registration.update();
 
-          // 等待一下讓更新檢查完成
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          // 等待更長時間讓更新檢查完成
+          await new Promise((resolve) => setTimeout(resolve, 2000));
 
           // 檢查是否有等待中的 Service Worker
           hasUpdate = !!registration.waiting;
+
+          // 如果沒有等待中的 Service Worker，嘗試強制更新
+          if (!hasUpdate) {
+            // 清除緩存後再次檢查
+            if ("caches" in window) {
+              const cacheNames = await caches.keys();
+              for (let name of cacheNames) {
+                if (name.includes("workbox") || name.includes("sw")) {
+                  await caches.delete(name);
+                }
+              }
+            }
+
+            // 再次檢查更新
+            await registration.update();
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            hasUpdate = !!registration.waiting;
+          }
         }
       }
 
+      // 如果還是沒有檢測到更新，但用戶要求更新，則強制執行更新流程
       if (!hasUpdate) {
-        // 沒有新版本
-        Swal.fire({
-          title: "已是最新版本",
-          text: "您目前使用的是最新版本，無需更新",
-          icon: "success",
+        const forceUpdateResult = await Swal.fire({
+          title: "未檢測到新版本",
+          text: "系統未檢測到新版本，但您可以強制刷新頁面來確保使用最新版本。是否要強制更新？",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "強制更新",
+          cancelButtonText: "取消",
           confirmButtonColor: "#667eea",
+          cancelButtonColor: "#6c757d",
           customClass: {
             container: "swal-high-z-index",
           },
         });
-        return;
+
+        if (!forceUpdateResult.isConfirmed) {
+          return;
+        }
+
+        // 強制執行更新流程
+        hasUpdate = true;
       }
 
       // 有新版本，詢問是否要更新
@@ -435,7 +463,7 @@ onUnmounted(() => {
       <div class="nav-container">
         <div class="nav-top-row">
           <div class="nav-brand">
-            <h1>拿破麻計分系統 <span class="version">v1.3.4</span></h1>
+            <h1>拿破麻計分系統 <span class="version">v1.3.5</span></h1>
           </div>
           <div class="nav-user">
             <!-- 桌面版用戶選單 -->
