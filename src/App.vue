@@ -4,8 +4,6 @@ import { useGameStore } from "@/stores/gameStore";
 import { useRouter } from "vue-router";
 import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import Swal from "sweetalert2";
-import PWAUpdatePrompt from "@/components/PWAUpdatePrompt.vue";
-import { forceUpdate } from "@/utils/versionCheck";
 
 const authStore = useAuthStore();
 const gameStore = useGameStore();
@@ -76,187 +74,6 @@ function openChangePassword() {
   showChangePassword.value = true;
   showUserMenu.value = false;
   error.value = "";
-}
-
-async function checkForUpdates() {
-  const result = await Swal.fire({
-    title: "版本更新",
-    text: "確定要檢查並更新到最新版本嗎？",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "檢查更新",
-    cancelButtonText: "取消",
-    confirmButtonColor: "#667eea",
-    cancelButtonColor: "#6c757d",
-    customClass: {
-      container: "swal-high-z-index",
-    },
-  });
-
-  if (result.isConfirmed) {
-    try {
-      // 顯示檢查中提示
-      Swal.fire({
-        title: "檢查更新中...",
-        text: "正在檢查是否有新版本",
-        icon: "info",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        customClass: {
-          container: "swal-high-z-index",
-        },
-      });
-
-      // 檢查是否有新版本
-      let hasUpdate = false;
-      if ("serviceWorker" in navigator) {
-        const registration = await navigator.serviceWorker.getRegistration();
-        if (registration) {
-          // 強制檢查更新
-          await registration.update();
-
-          // 等待更長時間讓更新檢查完成
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-
-          // 檢查是否有等待中的 Service Worker
-          hasUpdate = !!registration.waiting;
-
-          // 如果沒有等待中的 Service Worker，嘗試強制更新
-          if (!hasUpdate) {
-            // 清除緩存後再次檢查
-            if ("caches" in window) {
-              const cacheNames = await caches.keys();
-              for (let name of cacheNames) {
-                if (name.includes("workbox") || name.includes("sw")) {
-                  await caches.delete(name);
-                }
-              }
-            }
-
-            // 再次檢查更新
-            await registration.update();
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            hasUpdate = !!registration.waiting;
-          }
-        }
-      }
-
-      // 如果還是沒有檢測到更新，但用戶要求更新，則強制執行更新流程
-      if (!hasUpdate) {
-        const forceUpdateResult = await Swal.fire({
-          title: "未檢測到新版本",
-          text: "系統未檢測到新版本，但您可以強制刷新頁面來確保使用最新版本。是否要強制更新？",
-          icon: "question",
-          showCancelButton: true,
-          confirmButtonText: "強制更新",
-          cancelButtonText: "取消",
-          confirmButtonColor: "#667eea",
-          cancelButtonColor: "#6c757d",
-          customClass: {
-            container: "swal-high-z-index",
-          },
-        });
-
-        if (!forceUpdateResult.isConfirmed) {
-          return;
-        }
-
-        // 強制執行更新流程
-        hasUpdate = true;
-      }
-
-      // 有新版本，詢問是否要更新
-      const updateResult = await Swal.fire({
-        title: "發現新版本",
-        text: "檢測到新版本可用，是否要立即更新？",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "立即更新",
-        cancelButtonText: "稍後再說",
-        confirmButtonColor: "#667eea",
-        cancelButtonColor: "#6c757d",
-        customClass: {
-          container: "swal-high-z-index",
-        },
-      });
-
-      if (!updateResult.isConfirmed) {
-        return;
-      }
-
-      // 保存當前路由路徑
-      const currentPath = router.currentRoute.value.fullPath;
-      sessionStorage.setItem("preUpdatePath", currentPath);
-
-      // 顯示更新中提示
-      Swal.fire({
-        title: "更新中...",
-        text: "正在更新到最新版本，請稍候",
-        icon: "info",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        customClass: {
-          container: "swal-high-z-index",
-        },
-      });
-
-      // 清除本地緩存
-      if ("caches" in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
-      }
-
-      // 清除 localStorage 中的 PWA 相關數據
-      localStorage.removeItem("pwa-installed");
-      localStorage.removeItem("pwa-update-dismissed");
-
-      // 強制更新 Service Worker
-      forceUpdate();
-
-      // 延遲重新載入頁面
-      setTimeout(async () => {
-        try {
-          // 1. 先註銷所有 Service Worker
-          if ("serviceWorker" in navigator) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (let registration of registrations) {
-              await registration.unregister();
-            }
-          }
-
-          // 2. 清除所有緩存
-          if ("caches" in window) {
-            const cacheNames = await caches.keys();
-            for (let name of cacheNames) {
-              await caches.delete(name);
-            }
-          }
-
-          // 3. 清除 localStorage 和 sessionStorage
-          localStorage.clear();
-          sessionStorage.clear();
-
-          // 4. 強制重新導向到首頁
-          window.location.replace("/");
-        } catch (error) {
-          console.error("清理緩存失敗:", error);
-          // 如果清理失敗，直接重新導向
-          window.location.replace("/");
-        }
-      }, 2000);
-    } catch (error) {
-      console.error("更新失敗:", error);
-      Swal.fire({
-        title: "更新失敗",
-        text: "更新過程中發生錯誤，請稍後再試",
-        icon: "error",
-        confirmButtonColor: "#667eea",
-        customClass: {
-          container: "swal-high-z-index",
-        },
-      });
-    }
-  }
 }
 
 async function updateDisplayName() {
@@ -463,7 +280,7 @@ onUnmounted(() => {
       <div class="nav-container">
         <div class="nav-top-row">
           <div class="nav-brand">
-            <h1>拿破麻計分系統 <span class="version">v1.3.5</span></h1>
+            <h1>拿破麻計分系統 <span class="version">v1.3.6</span></h1>
           </div>
           <div class="nav-user">
             <!-- 桌面版用戶選單 -->
@@ -487,10 +304,7 @@ onUnmounted(() => {
                   <i class="bi bi-lock-fill"></i>
                   更改密碼
                 </button>
-                <button @click="checkForUpdates" class="dropdown-item">
-                  <i class="bi bi-arrow-clockwise"></i>
-                  版本更新
-                </button>
+
                 <div class="dropdown-divider"></div>
                 <button @click="openLogoutConfirm" class="dropdown-item logout">
                   <i class="bi bi-box-arrow-right"></i>
@@ -577,10 +391,6 @@ onUnmounted(() => {
                 <i class="bi bi-lock-fill"></i>
                 更改密碼
               </button>
-              <button @click="checkForUpdates" class="mobile-menu-item">
-                <i class="bi bi-arrow-clockwise"></i>
-                版本更新
-              </button>
             </div>
 
             <!-- 登出 -->
@@ -632,8 +442,6 @@ onUnmounted(() => {
 
     <!-- 更改密碼對話框 -->
     <div v-if="showChangePassword" class="modal-overlay" @click="closeModals">
-      <!-- PWA 更新提示 -->
-      <PWAUpdatePrompt />
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>更改密碼</h3>
