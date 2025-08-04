@@ -159,7 +159,7 @@
             <div v-else class="rounds-list">
               <div v-for="(round, index) in selectedGameRounds" :key="round.id" class="round-item">
                 <div class="round-header">
-                  <span class="round-number">第 {{ index + 1 }} 回合</span>
+                  <span class="round-number">第 {{ selectedGameRounds.length - index }} 回合</span>
                   <span class="round-time">{{ formatTime(round.createdAt) }}</span>
                 </div>
                 <div class="round-details">

@@ -470,32 +470,14 @@ export const useGameStore = defineStore("game", () => {
         throw new Error("無法刪除參與進行中遊戲的用戶");
       }
 
-      // 刪除用戶的所有遊戲記錄
-      const userGamesQuery = query(gamesRef, where("players", "array-contains", userId));
-      const userGamesSnapshot = await getDocs(userGamesQuery);
-
-      // 批量刪除用戶的遊戲和相關回合
-      for (const gameDoc of userGamesSnapshot.docs) {
-        const gameId = gameDoc.id;
-
-        // 刪除遊戲的所有回合記錄
-        const roundsRef = collection(db, "games", gameId, "rounds");
-        const roundsSnapshot = await getDocs(roundsRef);
-        const deleteRoundsPromises = roundsSnapshot.docs.map((doc) => deleteDoc(doc.ref));
-        await Promise.all(deleteRoundsPromises);
-
-        // 刪除遊戲本身
-        await deleteDoc(gameDoc.ref);
-      }
-
-      // 刪除用戶資料
+      // 只刪除用戶資料，保留所有遊戲和回合記錄
       const userRef = doc(db, "users", userId);
       await deleteDoc(userRef);
 
       // 從本地狀態中移除用戶
       users.value = users.value.filter((u) => u.uid !== userId);
 
-      console.log("用戶刪除成功");
+      console.log("用戶刪除成功（遊戲和回合記錄已保留）");
     } catch (error: any) {
       throw new Error(`刪除用戶失敗: ${error.message}`);
     }
