@@ -333,6 +333,11 @@ onMounted(async () => {
       await gameStore.loadUsers();
       // 再檢查進行中場次
       await gameStore.checkUserOngoingGame(authStore.user.uid);
+
+      // 如果是四人模式，預設秘書為"無（獨裁制）"
+      if (gameStore.currentGame?.playerCount === 4) {
+        secretaryId.value = "none";
+      }
     } catch (error) {
       console.error("載入進行中場次失敗:", error);
     }

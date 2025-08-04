@@ -57,30 +57,31 @@ const router = createRouter({
 });
 
 // 路由守衛
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, from) => {
   const authStore = useAuthStore();
   const gameStore = useGameStore();
 
   // 如果還在載入中，等待載入完成
   if (authStore.loading) {
-    const checkLoading = () => {
-      if (!authStore.loading) {
-        // 載入完成後，重新執行路由檢查
-        handleRoute(to, from, next);
-      } else {
-        setTimeout(checkLoading, 100);
-      }
-    };
-    checkLoading();
-    return;
+    return new Promise((resolve) => {
+      const checkLoading = () => {
+        if (!authStore.loading) {
+          // 載入完成後，重新執行路由檢查
+          resolve(handleRoute(to, from));
+        } else {
+          setTimeout(checkLoading, 100);
+        }
+      };
+      checkLoading();
+    });
   }
 
   // 處理路由邏輯
-  handleRoute(to, from, next);
+  return handleRoute(to, from);
 });
 
 // 路由處理函數
-async function handleRoute(to: any, from: any, next: any) {
+async function handleRoute(to: any, from: any) {
   const authStore = useAuthStore();
   const gameStore = useGameStore();
 
@@ -88,8 +89,7 @@ async function handleRoute(to: any, from: any, next: any) {
   const preUpdatePath = sessionStorage.getItem("preUpdatePath");
   if (preUpdatePath && to.path === "/" && authStore.user) {
     sessionStorage.removeItem("preUpdatePath");
-    next(preUpdatePath);
-    return;
+    return preUpdatePath;
   }
 
   // 如果用戶已登入但訪問首頁，根據情況導向適當頁面
@@ -98,22 +98,21 @@ async function handleRoute(to: any, from: any, next: any) {
       // 檢查是否有進行中的牌局
       const ongoingGame = await gameStore.checkUserOngoingGame(authStore.user.uid);
       if (ongoingGame) {
-        next("/ongoing");
+        return "/ongoing";
       } else {
-        next("/setup");
+        return "/setup";
       }
     } catch (error) {
       console.error("載入當前牌局失敗:", error);
-      next("/setup");
+      return "/setup";
     }
-    return;
   }
 
   // 檢查需要認證的路由
   if (to.meta.requiresAuth && !authStore.user) {
-    next("/");
+    return "/";
   } else {
-    next();
+    return true;
   }
 }
 

@@ -5,12 +5,28 @@
 
       <div class="setup-form">
         <div class="form-group">
-          <label>選擇五位玩家：</label>
+          <label>遊戲人數：</label>
+          <div class="player-count-selection">
+            <label class="radio-option">
+              <input type="radio" v-model="playerCount" :value="4" name="playerCount" />
+              <span class="radio-label">四人遊戲</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" v-model="playerCount" :value="5" name="playerCount" />
+              <span class="radio-label">五人遊戲</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>選擇{{ playerCount }}位玩家：</label>
           <div class="player-selection-header">
             <button @click="toggleSelectAll" class="btn-select-all">
               {{ isAllSelected ? "取消全選" : "全選" }}
             </button>
-            <span class="selection-info">已選擇 {{ selected.length }}/5 位玩家</span>
+            <span class="selection-info"
+              >已選擇 {{ selected.length }}/{{ playerCount }} 位玩家</span
+            >
           </div>
           <div class="player-selection">
             <div
@@ -75,6 +91,7 @@ interface UserDoc {
 
 const users = ref<UserDoc[]>([]);
 const selected = ref<string[]>([]);
+const playerCount = ref(5); // 預設五人遊戲
 const bet = ref(1);
 const error = ref("");
 const loading = ref(false);
@@ -83,7 +100,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 const canCreate = computed(() => {
-  return selected.value.length === 5 && bet.value > 0;
+  return selected.value.length === playerCount.value && bet.value > 0;
 });
 
 const isAllSelected = computed(() => {
@@ -175,6 +192,14 @@ watch(
   { deep: true }
 );
 
+// 監聽玩家數量變化，調整選取的玩家
+watch(playerCount, (newCount) => {
+  // 如果選取的玩家數量超過新的限制，移除多餘的玩家
+  if (selected.value.length > newCount) {
+    selected.value = selected.value.slice(0, newCount);
+  }
+});
+
 function togglePlayer(uid: string) {
   // 如果玩家有進行中牌局，則不允許選取
   if (userHasOngoingGame(uid)) {
@@ -184,7 +209,7 @@ function togglePlayer(uid: string) {
   const index = selected.value.indexOf(uid);
   if (index > -1) {
     selected.value.splice(index, 1);
-  } else if (selected.value.length < 5) {
+  } else if (selected.value.length < playerCount.value) {
     selected.value.push(uid);
   }
 
@@ -324,6 +349,50 @@ async function checkPlayersOngoingGames(): Promise<{ hasOngoing: boolean; player
   font-weight: 600;
   color: #333;
   font-size: 16px;
+}
+
+.player-count-selection {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 8px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.radio-option:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.radio-option input[type="radio"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.radio-option input[type="radio"]:checked + .radio-label {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.radio-option:has(input[type="radio"]:checked) {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.radio-label {
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
 }
 
 .player-selection-header {
@@ -496,6 +565,16 @@ async function checkPlayersOngoingGames(): Promise<{ hasOngoing: boolean; player
   .setup-card h2 {
     font-size: 20px;
     margin-bottom: 25px;
+  }
+
+  .player-count-selection {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .radio-option {
+    padding: 12px 16px;
+    font-size: 16px;
   }
 
   .player-selection {

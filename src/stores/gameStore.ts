@@ -22,6 +22,7 @@ export interface Game {
   id: string;
   hostId: string;
   players: string[];
+  playerCount: number; // 添加玩家數量字段
   betAmount: number;
   scores: Record<string, number>;
   status: "ongoing" | "finished";
@@ -65,6 +66,7 @@ export const useGameStore = defineStore("game", () => {
           id: gameDoc.id,
           hostId: gameData.hostId,
           players: gameData.players,
+          playerCount: gameData.playerCount || gameData.players.length, // 兼容舊數據
           betAmount: gameData.betAmount,
           scores: gameData.scores,
           status: gameData.status,
@@ -109,12 +111,15 @@ export const useGameStore = defineStore("game", () => {
 
   async function createGame(playerIds: string[], betAmount: number) {
     try {
-      if (playerIds.length !== 5) throw new Error("必須選擇五位玩家");
+      if (playerIds.length !== 4 && playerIds.length !== 5) {
+        throw new Error("必須選擇四位或五位玩家");
+      }
       const scores: Record<string, number> = {};
       playerIds.forEach((id) => (scores[id] = 0));
       const gameDoc = await addDoc(collection(db, "games"), {
         hostId: playerIds[0], // 例如第一位為開局者
         players: playerIds,
+        playerCount: playerIds.length, // 添加玩家數量記錄
         betAmount,
         scores,
         status: "ongoing",
@@ -124,6 +129,7 @@ export const useGameStore = defineStore("game", () => {
         id: gameDoc.id,
         hostId: playerIds[0],
         players: playerIds,
+        playerCount: playerIds.length,
         betAmount,
         scores,
         status: "ongoing",
@@ -247,6 +253,7 @@ export const useGameStore = defineStore("game", () => {
           id: doc.id,
           hostId: data.hostId,
           players: data.players,
+          playerCount: data.playerCount || data.players.length, // 兼容舊數據
           betAmount: data.betAmount,
           scores: data.scores,
           status: data.status,
