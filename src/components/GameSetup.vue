@@ -104,7 +104,9 @@ const canCreate = computed(() => {
 });
 
 const isAllSelected = computed(() => {
-  return selected.value.length === users.value.length;
+  // 只計算沒有進行中牌局的玩家數量
+  const availableUsers = users.value.filter((user) => !userHasOngoingGame(user.uid));
+  return selected.value.length === availableUsers.length && availableUsers.length > 0;
 });
 
 // 檢查玩家是否有進行中牌局
@@ -112,31 +114,6 @@ const playersWithOngoing = ref<string[]>([]);
 
 function userHasOngoingGame(uid: string): boolean {
   return playersWithOngoing.value.includes(uid);
-}
-
-// 檢查所有玩家的進行中牌局狀態
-async function checkAllPlayersOngoingGames() {
-  playersWithOngoing.value = [];
-
-  for (const playerId of selected.value) {
-    try {
-      const gamesRef = collection(db, "games");
-      const q = query(
-        gamesRef,
-        where("players", "array-contains", playerId),
-        where("status", "==", "ongoing")
-      );
-
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        playersWithOngoing.value.push(playerId);
-      }
-    } catch (error) {
-      console.error(`檢查玩家 ${playerId} 進行中牌局失敗:`, error);
-      // 如果檢查失敗，為了安全起見，將該玩家視為有進行中牌局
-      playersWithOngoing.value.push(playerId);
-    }
-  }
 }
 
 // 檢查所有玩家的進行中牌局狀態（用於初始載入）
@@ -181,13 +158,8 @@ onMounted(async () => {
 watch(
   selected,
   async (newSelected) => {
-    if (newSelected.length > 0) {
-      await checkAllPlayersOngoingGames();
-    } else {
-      playersWithOngoing.value = [];
-      // 重新檢查所有玩家的狀態
-      await checkAllUsersOngoingGames();
-    }
+    // 始終保持所有玩家的進行中狀態
+    await checkAllUsersOngoingGames();
   },
   { deep: true }
 );
@@ -221,7 +193,9 @@ function toggleSelectAll() {
   if (isAllSelected.value) {
     selected.value = [];
   } else {
-    selected.value = users.value.map((user) => user.uid);
+    // 只選取沒有進行中牌局的玩家
+    const availableUsers = users.value.filter((user) => !userHasOngoingGame(user.uid));
+    selected.value = availableUsers.map((user) => user.uid);
   }
 }
 

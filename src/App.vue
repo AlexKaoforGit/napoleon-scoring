@@ -280,7 +280,7 @@ onUnmounted(() => {
       <div class="nav-container">
         <div class="nav-top-row">
           <div class="nav-brand">
-            <h1>拿破麻計分系統 <span class="version">v1.4.0</span></h1>
+            <h1>拿破麻計分系統 <span class="version">v1.4.1</span></h1>
           </div>
           <div class="nav-user">
             <!-- 桌面版用戶選單 -->
