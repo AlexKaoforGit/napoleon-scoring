@@ -154,12 +154,13 @@ onMounted(async () => {
   }
 });
 
-// 監聽選取的玩家變化，自動檢查進行中牌局
+// 監聽選取的玩家變化，但不重新檢查進行中狀態
+// 只在初始載入時檢查一次，避免閃爍
 watch(
   selected,
   async (newSelected) => {
-    // 始終保持所有玩家的進行中狀態
-    await checkAllUsersOngoingGames();
+    // 移除重新檢查邏輯，保持進行中狀態穩定
+    // 只在需要時才重新檢查（例如創建遊戲前的最終驗證）
   },
   { deep: true }
 );
@@ -229,6 +230,9 @@ async function create() {
   loading.value = true;
 
   try {
+    // 在創建遊戲前，先更新所有玩家的進行中狀態
+    await checkAllUsersOngoingGames();
+
     // 檢查選取的玩家是否有進行中牌局
     const ongoingCheck = await checkPlayersOngoingGames();
 

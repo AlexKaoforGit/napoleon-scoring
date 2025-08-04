@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h2>拿破麻計分系統 <span class="version">v1.4.1</span></h2>
+      <h2>拿破麻計分系統 <span class="version">v1.4.2</span></h2>
       <form @submit.prevent="onSubmit" class="login-form">
         <div class="form-group">
           <label for="email">電子郵件</label>
