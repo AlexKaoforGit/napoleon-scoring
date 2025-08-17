@@ -37,6 +37,7 @@ export interface Round {
   contractType: "standard" | "dictator";
   extraTricks: number;
   scores: Record<string, number>;
+  playerIds: string[]; // 記錄該回合參與的玩家
   createdAt: Date;
 }
 
@@ -101,6 +102,7 @@ export const useGameStore = defineStore("game", () => {
           contractType: data.contractType,
           extraTricks: data.extraTricks,
           scores: data.scores,
+          playerIds: data.playerIds || Object.keys(data.scores || {}), // 兼容舊數據，如果沒有 playerIds 則使用 scores 的鍵
           createdAt: data.createdAt.toDate(),
         };
       });
@@ -111,8 +113,8 @@ export const useGameStore = defineStore("game", () => {
 
   async function createGame(playerIds: string[], betAmount: number) {
     try {
-      if (playerIds.length !== 4 && playerIds.length !== 5) {
-        throw new Error("必須選擇四位或五位玩家");
+      if (playerIds.length < 4) {
+        throw new Error("至少需要選擇四位玩家");
       }
       const scores: Record<string, number> = {};
       playerIds.forEach((id) => (scores[id] = 0));
@@ -146,19 +148,24 @@ export const useGameStore = defineStore("game", () => {
     secretaryId: string;
     contractType: "standard" | "dictator";
     extraTricks: number;
+    playerIds?: string[]; // 可選的玩家列表，如果不提供則使用所有玩家
   }) {
     if (!currentGame.value) throw new Error("尚未建立牌局");
     const { id, players, betAmount } = currentGame.value;
 
+    // 使用提供的玩家列表或預設使用所有玩家
+    const roundPlayers = input.playerIds || players;
+
     // 計算分數
     const roundScores = calculateRoundScores({
       ...input,
-      playerIds: players,
+      playerIds: roundPlayers,
     });
 
     // 在 rounds 子集合新增回合
     const roundDoc = await addDoc(collection(db, "games", id, "rounds"), {
       ...input,
+      playerIds: roundPlayers,
       scores: roundScores,
       createdAt: new Date(),
     });
@@ -184,9 +191,10 @@ export const useGameStore = defineStore("game", () => {
       contractType: input.contractType,
       extraTricks: input.extraTricks,
       scores: roundScores,
+      playerIds: roundPlayers,
       createdAt: new Date(),
     };
-    currentRounds.value.push(newRound);
+    currentRounds.value.unshift(newRound);
   }
 
   async function loadUsers() {
@@ -282,6 +290,7 @@ export const useGameStore = defineStore("game", () => {
           contractType: data.contractType,
           extraTricks: data.extraTricks,
           scores: data.scores,
+          playerIds: data.playerIds || Object.keys(data.scores || {}), // 兼容舊數據，如果沒有 playerIds 則使用 scores 的鍵
           createdAt: data.createdAt.toDate(),
         };
       });
@@ -298,21 +307,26 @@ export const useGameStore = defineStore("game", () => {
       secretaryId: string;
       contractType: "standard" | "dictator";
       extraTricks: number;
+      playerIds?: string[]; // 可選的玩家列表
     }
   ) {
     if (!currentGame.value) throw new Error("尚未建立牌局");
 
     try {
+      // 使用提供的玩家列表或預設使用所有玩家
+      const roundPlayers = updates.playerIds || currentGame.value.players;
+
       // 重新計算分數
       const newScores = calculateRoundScores({
         ...updates,
-        playerIds: currentGame.value.players,
+        playerIds: roundPlayers,
       });
 
       // 更新回合記錄
       const roundRef = doc(db, "games", currentGame.value.id, "rounds", roundId);
       await updateDoc(roundRef, {
         ...updates,
+        playerIds: roundPlayers,
         scores: newScores,
         updatedAt: new Date(),
       });

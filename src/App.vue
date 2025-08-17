@@ -208,6 +208,11 @@ function closeModals() {
   confirmPassword.value = "";
 }
 
+// 重新整理頁面
+function refreshPage() {
+  window.location.reload();
+}
+
 function getUserDisplayName() {
   if (!authStore.user) return "";
 
@@ -280,9 +285,14 @@ onUnmounted(() => {
       <div class="nav-container">
         <div class="nav-top-row">
           <div class="nav-brand">
-            <h1>拿破麻計分系統 <span class="version">v1.4.2</span></h1>
+            <h1>拿破麻計分系統 <span class="version">v1.4.4</span></h1>
           </div>
           <div class="nav-user">
+            <!-- 桌面版重新整理按鈕 -->
+            <button @click="refreshPage" class="refresh-btn desktop-only" title="重新整理">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+
             <!-- 桌面版用戶選單 -->
             <div class="user-menu-container desktop-only">
               <button
@@ -312,6 +322,11 @@ onUnmounted(() => {
                 </button>
               </div>
             </div>
+
+            <!-- 手機版重新整理按鈕 -->
+            <button @click="refreshPage" class="refresh-btn mobile-only" title="重新整理">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
 
             <!-- 手機版漢堡選單 -->
             <div class="mobile-menu-container mobile-only">
@@ -591,6 +606,42 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #666;
+}
+
+.refresh-btn:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.refresh-btn i {
+  font-size: 16px;
+}
+
+/* 手機版重新整理按鈕樣式調整 */
+@media (max-width: 768px) {
+  .refresh-btn.mobile-only {
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+  }
+
+  .refresh-btn.mobile-only i {
+    font-size: 18px;
+  }
 }
 
 .user-menu-container {

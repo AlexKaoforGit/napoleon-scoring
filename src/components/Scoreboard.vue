@@ -121,7 +121,35 @@
           <div class="game-details">
             <div class="detail-row">
               <span class="label">賭注金額:</span>
-              <span class="value">${{ selectedGame.betAmount }}</span>
+              <div class="bet-amount-edit">
+                <span v-if="!isEditingBet" class="value">${{ selectedGame.betAmount }}</span>
+                <div v-else class="edit-bet-container">
+                  <input
+                    v-model.number="editingBetAmount"
+                    type="number"
+                    min="1"
+                    class="edit-bet-input"
+                    @keyup.enter="saveBetAmount"
+                    @keyup.esc="cancelEditBet"
+                  />
+                  <div class="edit-bet-actions">
+                    <button @click="saveBetAmount" class="btn-save" title="儲存">
+                      <i class="bi bi-check"></i>
+                    </button>
+                    <button @click="cancelEditBet" class="btn-cancel" title="取消">
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </div>
+                </div>
+                <button
+                  v-if="isAdmin && !isEditingBet"
+                  @click="startEditBet"
+                  class="btn-edit-bet"
+                  title="編輯賭注金額"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </div>
             </div>
             <div class="detail-row">
               <span class="label">開始時間:</span>
@@ -215,6 +243,8 @@ import { useRouter } from "vue-router";
 import { useGameStore } from "@/stores/gameStore";
 import { useAuthStore } from "@/stores/authStore";
 import type { Game, Round } from "@/stores/gameStore";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/firebase";
 import Swal from "sweetalert2";
 
 const router = useRouter();
@@ -224,6 +254,8 @@ const authStore = useAuthStore();
 const selectedGame = ref<Game | null>(null);
 const selectedGameRounds = ref<Round[]>([]);
 const isAdmin = ref(false);
+const isEditingBet = ref(false);
+const editingBetAmount = ref(0);
 
 const currentGame = computed(() => gameStore.currentGame);
 const currentRounds = computed(() => gameStore.currentRounds);
@@ -440,6 +472,76 @@ async function deleteGame(game: Game) {
 
 function goToOngoingGame() {
   router.push("/ongoing");
+}
+
+// 開始編輯賭注金額
+function startEditBet() {
+  if (selectedGame.value) {
+    editingBetAmount.value = selectedGame.value.betAmount;
+    isEditingBet.value = true;
+  }
+}
+
+// 儲存賭注金額
+async function saveBetAmount() {
+  if (!selectedGame.value || editingBetAmount.value <= 0) {
+    return;
+  }
+
+  try {
+    // 更新遊戲的賭注金額
+    await updateGameBetAmount(selectedGame.value.id, editingBetAmount.value);
+
+    // 更新本地狀態
+    selectedGame.value.betAmount = editingBetAmount.value;
+
+    // 重新載入遊戲資料以更新排行榜
+    await gameStore.loadFinishedGames();
+
+    isEditingBet.value = false;
+
+    Swal.fire({
+      title: "更新成功",
+      text: `賭注金額已更新為 $${editingBetAmount.value}`,
+      icon: "success",
+      confirmButtonColor: "#667eea",
+      customClass: {
+        container: "swal-high-z-index",
+      },
+    });
+  } catch (error: any) {
+    console.error("更新賭注金額失敗:", error);
+    Swal.fire({
+      title: "更新失敗",
+      text: error.message || "更新賭注金額時發生錯誤",
+      icon: "error",
+      confirmButtonColor: "#667eea",
+      customClass: {
+        container: "swal-high-z-index",
+      },
+    });
+  }
+}
+
+// 取消編輯賭注金額
+function cancelEditBet() {
+  isEditingBet.value = false;
+  editingBetAmount.value = 0;
+}
+
+// 更新歷史遊戲的賭注金額
+async function updateGameBetAmount(gameId: string, newBetAmount: number) {
+  try {
+    const gameRef = doc(db, "games", gameId);
+    await updateDoc(gameRef, {
+      betAmount: newBetAmount,
+      updatedAt: new Date(),
+    });
+
+    console.log("歷史遊戲賭注金額更新成功");
+  } catch (error: any) {
+    throw new Error(`更新歷史遊戲賭注金額失敗: ${error.message}`);
+  }
 }
 </script>
 
@@ -742,6 +844,88 @@ function goToOngoingGame() {
 
 .value {
   color: #333;
+}
+
+.bet-amount-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-bet-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-bet-input {
+  width: 80px;
+  padding: 6px 8px;
+  border: 2px solid #667eea;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.edit-bet-input:focus {
+  outline: none;
+  border-color: #764ba2;
+}
+
+.edit-bet-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-save,
+.btn-cancel {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  transition: all 0.2s ease;
+}
+
+.btn-save {
+  color: #28a745;
+}
+
+.btn-save:hover {
+  background: #d4edda;
+}
+
+.btn-cancel {
+  color: #dc3545;
+}
+
+.btn-cancel:hover {
+  background: #f8d7da;
+}
+
+.btn-edit-bet {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  transition: all 0.2s ease;
+}
+
+.btn-edit-bet:hover {
+  background: #f8f9ff;
+  color: #764ba2;
 }
 
 .final-scores {

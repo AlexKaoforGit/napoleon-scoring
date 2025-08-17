@@ -60,12 +60,46 @@
 
       <!-- 玩家列表和當前分數 -->
       <div class="players-section">
-        <h3>玩家分數</h3>
+        <div class="players-header">
+          <h3>玩家分數</h3>
+          <div class="player-selection-controls">
+            <div class="player-count-toggle">
+              <label class="radio-option">
+                <input
+                  type="radio"
+                  v-model="currentRoundPlayerCount"
+                  :value="4"
+                  name="roundPlayerCount"
+                />
+                <span class="radio-label">四人回合</span>
+              </label>
+              <label class="radio-option">
+                <input
+                  type="radio"
+                  v-model="currentRoundPlayerCount"
+                  :value="5"
+                  name="roundPlayerCount"
+                />
+                <span class="radio-label">五人回合</span>
+              </label>
+            </div>
+            <div class="selection-info">
+              已選擇 {{ selectedPlayers.length }}/{{ currentRoundPlayerCount }} 位玩家
+            </div>
+          </div>
+        </div>
         <div class="players-grid">
           <div
             v-for="playerId in gameStore.currentGame?.players"
             :key="playerId"
             class="player-card"
+            :class="{
+              selected: selectedPlayers.includes(playerId),
+              disabled:
+                !selectedPlayers.includes(playerId) &&
+                selectedPlayers.length >= currentRoundPlayerCount,
+            }"
+            @click="togglePlayerSelection(playerId)"
           >
             <div class="player-name">{{ getUserName(playerId) }}</div>
             <div
@@ -83,6 +117,7 @@
                 (gameStore.currentGame?.betAmount || 0)
               }}
             </div>
+            <div v-if="selectedPlayers.includes(playerId)" class="selection-checkmark">✓</div>
           </div>
         </div>
       </div>
@@ -96,7 +131,7 @@
               <label>拿破崙：</label>
               <select v-model="napoleonId" class="form-select" required>
                 <option value="">請選擇拿破崙</option>
-                <option v-for="uid in gameStore.currentGame?.players" :key="uid" :value="uid">
+                <option v-for="uid in selectedPlayers" :key="uid" :value="uid">
                   {{ getUserName(uid) }}
                 </option>
               </select>
@@ -135,7 +170,7 @@
             <h4>分數預覽</h4>
             <div class="score-grid">
               <div
-                v-for="uid in gameStore.currentGame?.players"
+                v-for="uid in selectedPlayers"
                 :key="uid"
                 class="score-item"
                 :class="getScoreClass(uid)"
@@ -194,7 +229,7 @@
                   <label>拿破崙：</label>
                   <select v-model="editRoundData.napoleonId" class="form-select" required>
                     <option value="">請選擇拿破崙</option>
-                    <option v-for="uid in gameStore.currentGame?.players" :key="uid" :value="uid">
+                    <option v-for="uid in round.playerIds" :key="uid" :value="uid">
                       {{ getUserName(uid) }}
                     </option>
                   </select>
@@ -256,11 +291,7 @@
                 </div>
               </div>
               <div class="round-scores">
-                <div
-                  v-for="playerId in gameStore.currentGame?.players"
-                  :key="playerId"
-                  class="round-score-item"
-                >
+                <div v-for="playerId in round.playerIds" :key="playerId" class="round-score-item">
                   <span class="player-name">{{ getUserName(playerId) }}</span>
                   <span
                     class="score"
@@ -312,6 +343,10 @@ const isExtraTricks = ref(true); // true: 超吃張數, false: 缺少張數
 const error = ref("");
 const loading = ref(false);
 
+// 回合參與玩家選擇
+const selectedPlayers = ref<string[]>([]);
+const currentRoundPlayerCount = ref(5); // 預設五人遊戲
+
 // 管理員功能相關的響應式變數
 const editingRound = ref<string | null>(null);
 const editingBetAmount = ref(false);
@@ -337,6 +372,13 @@ onMounted(async () => {
       // 如果是四人模式，預設秘書為"無（獨裁制）"
       if (gameStore.currentGame?.playerCount === 4) {
         secretaryId.value = "none";
+        currentRoundPlayerCount.value = 4;
+      }
+
+      // 初始化選取的玩家，根據 currentRoundPlayerCount 選取前幾個玩家
+      if (gameStore.currentGame) {
+        const playerCount = currentRoundPlayerCount.value;
+        selectedPlayers.value = gameStore.currentGame.players.slice(0, playerCount);
       }
     } catch (error) {
       console.error("載入進行中場次失敗:", error);
@@ -348,6 +390,25 @@ onMounted(async () => {
 watch(napoleonId, (newNapoleonId) => {
   if (newNapoleonId && secretaryId.value === newNapoleonId) {
     secretaryId.value = "";
+  }
+});
+
+// 監聽回合玩家數量變化，調整選取的玩家
+watch(currentRoundPlayerCount, (newCount) => {
+  if (gameStore.currentGame) {
+    // 如果選取的玩家數量超過新的限制，移除多餘的玩家
+    if (selectedPlayers.value.length > newCount) {
+      selectedPlayers.value = selectedPlayers.value.slice(0, newCount);
+    }
+    // 如果選取的玩家數量少於新的限制，自動選取前幾個玩家
+    else if (selectedPlayers.value.length < newCount) {
+      const availablePlayers = gameStore.currentGame.players.filter(
+        (playerId) => !selectedPlayers.value.includes(playerId)
+      );
+      const needToAdd = newCount - selectedPlayers.value.length;
+      const playersToAdd = availablePlayers.slice(0, needToAdd);
+      selectedPlayers.value.push(...playersToAdd);
+    }
   }
 });
 
@@ -367,6 +428,9 @@ const canSubmit = computed(() => {
   if (!napoleonId.value) return false;
   if (!secretaryId.value) return false;
 
+  // 檢查選取的玩家數量是否符合要求
+  if (selectedPlayers.value.length !== currentRoundPlayerCount.value) return false;
+
   // 驗證額外張數範圍
   if (isExtraTricks.value) {
     // 超吃張數：0-7
@@ -380,17 +444,21 @@ const canSubmit = computed(() => {
 });
 
 const canPreview = computed(() => {
-  return canSubmit.value && extraTricks.value !== 0;
+  return (
+    napoleonId.value &&
+    secretaryId.value &&
+    selectedPlayers.value.length === currentRoundPlayerCount.value
+  );
 });
 
 const availableSecretaries = computed(() => {
-  if (!gameStore.currentGame?.players) return [];
+  if (!selectedPlayers.value.length) return [];
 
-  // 如果拿破崙還沒選擇，返回所有玩家
-  if (!napoleonId.value) return gameStore.currentGame.players;
+  // 如果拿破崙還沒選擇，返回所有選取的玩家
+  if (!napoleonId.value) return selectedPlayers.value;
 
   // 扣除拿破崙已選擇的玩家
-  return gameStore.currentGame.players.filter((uid) => uid !== napoleonId.value);
+  return selectedPlayers.value.filter((uid) => uid !== napoleonId.value);
 });
 
 // 檢查是否為管理員
@@ -404,13 +472,15 @@ const isAdmin = computed(() => {
 
 // 編輯時可選的秘書列表
 const editAvailableSecretaries = computed(() => {
-  if (!gameStore.currentGame?.players) return [];
+  // 找到當前編輯的回合
+  const editingRoundData = gameStore.currentRounds.find((r) => r.id === editingRound.value);
+  if (!editingRoundData) return [];
 
-  // 如果拿破崙還沒選擇，返回所有玩家
-  if (!editRoundData.value.napoleonId) return gameStore.currentGame.players;
+  // 如果拿破崙還沒選擇，返回該回合的所有玩家
+  if (!editRoundData.value.napoleonId) return editingRoundData.playerIds;
 
   // 扣除拿破崙已選擇的玩家
-  return gameStore.currentGame.players.filter((uid) => uid !== editRoundData.value.napoleonId);
+  return editingRoundData.playerIds.filter((uid) => uid !== editRoundData.value.napoleonId);
 });
 
 const previewScores = computed(() => {
@@ -432,7 +502,7 @@ const previewScores = computed(() => {
       napoleonId: napoleonId.value,
       secretaryId: secId,
       extraTricks: actualExtraTricks,
-      playerIds: gameStore.currentGame.players,
+      playerIds: selectedPlayers.value,
     });
   } catch {
     return {};
@@ -443,6 +513,17 @@ function toggleTricksType() {
   isExtraTricks.value = !isExtraTricks.value;
   // 切換時重置輸入值
   extraTricks.value = 0;
+}
+
+// 切換玩家選擇
+function togglePlayerSelection(playerId: string) {
+  const index = selectedPlayers.value.indexOf(playerId);
+  if (index > -1) {
+    selectedPlayers.value.splice(index, 1);
+  } else if (selectedPlayers.value.length < currentRoundPlayerCount.value) {
+    selectedPlayers.value.push(playerId);
+  }
+  // 如果已滿，不允許新增玩家
 }
 
 function getUserName(userId: string): string {
@@ -506,7 +587,13 @@ async function submitRound() {
       secretaryId: secId,
       contractType: isDictator ? "dictator" : "standard",
       extraTricks: finalExtraTricks,
+      playerIds: selectedPlayers.value,
     });
+
+    // 重新載入回合記錄以確保顯示正確的玩家列表
+    if (gameStore.currentGame) {
+      await gameStore.loadGameRounds(gameStore.currentGame.id);
+    }
 
     // 重置表單
     napoleonId.value = "";
@@ -595,6 +682,12 @@ function cancelEditRound() {
 async function saveEditRound(roundId: string) {
   loading.value = true;
   try {
+    // 找到當前編輯的回合
+    const editingRoundData = gameStore.currentRounds.find((r) => r.id === roundId);
+    if (!editingRoundData) {
+      throw new Error("找不到要編輯的回合");
+    }
+
     // 判斷是否為獨裁制
     const isDictator = editRoundData.value.secretaryId === "none";
     const secId = isDictator ? editRoundData.value.napoleonId : editRoundData.value.secretaryId;
@@ -604,6 +697,7 @@ async function saveEditRound(roundId: string) {
       secretaryId: secId,
       contractType: isDictator ? "dictator" : "standard",
       extraTricks: editRoundData.value.extraTricks,
+      playerIds: editingRoundData.playerIds, // 使用該回合的玩家
     });
 
     editingRound.value = null;
@@ -775,10 +869,77 @@ async function saveEditBetAmount() {
   margin-bottom: 40px;
 }
 
+.players-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
 .players-section h3 {
   color: #333;
   font-size: 20px;
-  margin-bottom: 20px;
+  margin: 0;
+}
+
+.player-selection-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.player-count-toggle {
+  display: flex;
+  gap: 16px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.radio-option:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.radio-option input[type="radio"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.radio-option input[type="radio"]:checked + .radio-label {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.radio-option:has(input[type="radio"]:checked) {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.radio-label {
+  font-size: 12px;
+  color: #333;
+  cursor: pointer;
+}
+
+.selection-info {
+  font-size: 12px;
+  color: #666;
+  background: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 .players-grid {
@@ -793,6 +954,43 @@ async function saveEditBetAmount() {
   padding: 16px;
   text-align: center;
   border: 2px solid #e1e5e9;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.player-card.selected {
+  border-color: #667eea;
+  background: #e3f2fd;
+}
+
+.player-card.disabled {
+  border-color: #e1e5e9;
+  background: #f8f9fa;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.player-card.disabled:hover {
+  border-color: #e1e5e9;
+  background: #f8f9fa;
+  transform: none;
+}
+
+.selection-checkmark {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #667eea;
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .player-name {
@@ -1328,6 +1526,29 @@ async function saveEditBetAmount() {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
+  }
+
+  .players-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .player-selection-controls {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .player-count-toggle {
+    gap: 12px;
+  }
+
+  .radio-option {
+    padding: 8px 12px;
+  }
+
+  .radio-label {
+    font-size: 14px;
   }
 
   .game-header h2 {

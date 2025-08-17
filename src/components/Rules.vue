@@ -3,15 +3,28 @@
     <div class="rules-card">
       <h1>拿破崙計分規則</h1>
 
-      <div class="rules-section">
-        <h2>遊戲概述</h2>
-        <p>
-          拿破崙是一種五人撲克牌遊戲，由一位拿破崙（主導者）與其他四位玩家對抗。遊戲分為標準制和獨裁制兩種模式。
-        </p>
+      <!-- 模式切換 -->
+      <div class="mode-toggle">
+        <label class="radio-option">
+          <input type="radio" v-model="selectedMode" value="five" name="gameMode" />
+          <span class="radio-label">五人模式</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" v-model="selectedMode" value="four" name="gameMode" />
+          <span class="radio-label">四人模式</span>
+        </label>
       </div>
 
       <div class="rules-section">
-        <h2>標準制</h2>
+        <h2>遊戲概述</h2>
+        <p>
+          拿破崙是一種撲克牌遊戲，支援四人或五人模式。由一位拿破崙（主導者）與其他玩家對抗。遊戲分為標準制和獨裁制兩種模式。
+        </p>
+      </div>
+
+      <!-- 五人模式規則 -->
+      <div v-if="selectedMode === 'five'" class="rules-section">
+        <h2>標準制（五人模式）</h2>
         <p class="rule-description">拿破崙選擇他人為秘書時使用此規則。</p>
 
         <div class="rule-subsection">
@@ -41,8 +54,41 @@
         </div>
       </div>
 
-      <div class="rules-section">
-        <h2>獨裁制</h2>
+      <!-- 四人模式規則 -->
+      <div v-if="selectedMode === 'four'" class="rules-section">
+        <h2>標準制（四人模式）</h2>
+        <p class="rule-description">拿破崙選擇他人為秘書時使用此規則。</p>
+
+        <div class="rule-subsection">
+          <h3>成功（成約）</h3>
+          <ul>
+            <li><strong>拿破崙</strong>：+100 分</li>
+            <li><strong>秘書</strong>：+50 分</li>
+            <li><strong>每位防家</strong>：-75 分</li>
+            <li>
+              <strong>超吃每張</strong>：
+              <ul>
+                <li>拿破崙：+20 分</li>
+                <li>秘書：+10 分</li>
+                <li>防家：-15 分</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="rule-subsection">
+          <h3>失敗（倒約）</h3>
+          <ul>
+            <li><strong>拿破崙</strong>：缺少張數 × -40 分</li>
+            <li><strong>秘書</strong>：缺少張數 × -20 分</li>
+            <li><strong>每位防家</strong>：缺少張數 × +30 分</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 五人模式獨裁制 -->
+      <div v-if="selectedMode === 'five'" class="rules-section">
+        <h2>獨裁制（五人模式）</h2>
         <p class="rule-description">拿破崙自己當秘書時使用此規則。</p>
 
         <div class="rule-subsection">
@@ -69,11 +115,42 @@
         </div>
       </div>
 
+      <!-- 四人模式獨裁制 -->
+      <div v-if="selectedMode === 'four'" class="rules-section">
+        <h2>獨裁制（四人模式）</h2>
+        <p class="rule-description">拿破崙自己當秘書時使用此規則。</p>
+
+        <div class="rule-subsection">
+          <h3>成功</h3>
+          <ul>
+            <li><strong>拿破崙</strong>：+300 分</li>
+            <li><strong>每位防家</strong>：-100 分</li>
+            <li>
+              <strong>超吃每張</strong>：
+              <ul>
+                <li>拿破崙：+30 分</li>
+                <li>防家：-10 分</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="rule-subsection">
+          <h3>失敗</h3>
+          <ul>
+            <li><strong>拿破崙</strong>：缺少張數 × -45 分</li>
+            <li><strong>每位防家</strong>：缺少張數 × +15 分</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 計分範例 -->
       <div class="rules-section">
         <h2>計分範例</h2>
 
-        <div class="example-subsection">
-          <h3>標準制範例</h3>
+        <!-- 五人模式範例 -->
+        <div v-if="selectedMode === 'five'" class="example-subsection">
+          <h3>標準制範例（五人模式）</h3>
           <div class="example-item">
             <h4>成功案例：拿破崙超吃 2 張</h4>
             <ul>
@@ -93,8 +170,31 @@
           </div>
         </div>
 
-        <div class="example-subsection">
-          <h3>獨裁制範例</h3>
+        <!-- 四人模式範例 -->
+        <div v-if="selectedMode === 'four'" class="example-subsection">
+          <h3>標準制範例（四人模式）</h3>
+          <div class="example-item">
+            <h4>成功案例：拿破崙超吃 2 張</h4>
+            <ul>
+              <li>拿破崙：100 + (2 × 20) = <strong>140 分</strong></li>
+              <li>秘書：50 + (2 × 10) = <strong>70 分</strong></li>
+              <li>每位防家：-75 + (2 × -15) = <strong>-105 分</strong></li>
+            </ul>
+          </div>
+
+          <div class="example-item">
+            <h4>失敗案例：拿破崙缺少 1 張</h4>
+            <ul>
+              <li>拿破崙：1 × -40 = <strong>-40 分</strong></li>
+              <li>秘書：1 × -20 = <strong>-20 分</strong></li>
+              <li>每位防家：1 × 30 = <strong>30 分</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 五人模式獨裁制範例 -->
+        <div v-if="selectedMode === 'five'" class="example-subsection">
+          <h3>獨裁制範例（五人模式）</h3>
           <div class="example-item">
             <h4>成功案例：拿破崙超吃 1 張</h4>
             <ul>
@@ -108,6 +208,26 @@
             <ul>
               <li>拿破崙：2 × -40 = <strong>-80 分</strong></li>
               <li>每位防家：2 × 10 = <strong>20 分</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 四人模式獨裁制範例 -->
+        <div v-if="selectedMode === 'four'" class="example-subsection">
+          <h3>獨裁制範例（四人模式）</h3>
+          <div class="example-item">
+            <h4>成功案例：拿破崙超吃 1 張</h4>
+            <ul>
+              <li>拿破崙：300 + (1 × 30) = <strong>330 分</strong></li>
+              <li>每位防家：-100 + (1 × -10) = <strong>-110 分</strong></li>
+            </ul>
+          </div>
+
+          <div class="example-item">
+            <h4>失敗案例：拿破崙缺少 2 張</h4>
+            <ul>
+              <li>拿破崙：2 × -45 = <strong>-90 分</strong></li>
+              <li>每位防家：2 × 15 = <strong>30 分</strong></li>
             </ul>
           </div>
         </div>
@@ -127,7 +247,9 @@
 </template>
 
 <script setup lang="ts">
-// 這個頁面不需要任何邏輯，純展示計分規則
+import { ref } from "vue";
+
+const selectedMode = ref("five"); // 預設顯示五人模式
 </script>
 
 <style scoped>
@@ -156,6 +278,52 @@
   margin-bottom: 30px;
   font-size: 28px;
   font-weight: 700;
+}
+
+.mode-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  gap: 20px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.radio-option:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.radio-option input[type="radio"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.radio-option input[type="radio"]:checked + .radio-label {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.radio-option:has(input[type="radio"]:checked) {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.radio-label {
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+  font-weight: 500;
 }
 
 .rules-section {
@@ -319,6 +487,15 @@
   .rules-card h1 {
     font-size: 24px;
     margin-bottom: 25px;
+  }
+
+  .mode-toggle {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .radio-option {
+    font-size: 16px;
   }
 
   .rules-section {
