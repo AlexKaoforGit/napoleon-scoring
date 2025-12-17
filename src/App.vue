@@ -9,6 +9,9 @@ const authStore = useAuthStore();
 const gameStore = useGameStore();
 const router = useRouter();
 
+// 從環境變數讀取版本號
+const appVersion = __APP_VERSION__;
+
 // 下拉選單狀態
 const showUserMenu = ref(false);
 const showEditProfile = ref(false);
@@ -285,7 +288,7 @@ onUnmounted(() => {
       <div class="nav-container">
         <div class="nav-top-row">
           <div class="nav-brand">
-            <h1>拿破麻計分系統 <span class="version">v1.4.4</span></h1>
+            <h1>拿破麻計分系統 <span class="version">v{{ appVersion }}</span></h1>
           </div>
           <div class="nav-user">
             <!-- 桌面版重新整理按鈕 -->

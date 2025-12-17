@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h2>拿破麻計分系統 <span class="version">v1.4.4</span></h2>
+      <h2>拿破麻計分系統 <span class="version">v{{ appVersion }}</span></h2>
       <form @submit.prevent="onSubmit" class="login-form">
         <div class="form-group">
           <label for="email">電子郵件</label>
@@ -55,6 +55,9 @@ const email = ref("");
 const password = ref("");
 const error = ref("");
 const loading = ref(false);
+
+// 從環境變數讀取版本號
+const appVersion = __APP_VERSION__;
 
 async function onSubmit() {
   error.value = "";

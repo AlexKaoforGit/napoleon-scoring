@@ -2,9 +2,19 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { VitePWA } from "vite-plugin-pwa";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+// 讀取 package.json 的版本號
+const packageJson = JSON.parse(
+  readFileSync(resolve(__dirname, "package.json"), "utf-8")
+);
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(packageJson.version),
+  },
   plugins: [
     vue(),
     VitePWA({

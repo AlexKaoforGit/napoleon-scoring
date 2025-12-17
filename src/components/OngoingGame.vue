@@ -149,20 +149,31 @@
             </div>
 
             <div class="form-group">
-              <label class="dynamic-label" @click="toggleTricksType">
-                <span class="label-text"
-                  >{{ isExtraTricks ? "超吃張數" : "缺少張數" }} <i class="bi bi-arrow-repeat"></i
-                ></span>
-              </label>
+              <label>合約等級：</label>
+              <select v-model.number="contractLevel" class="form-select" required>
+                <option value="">請選擇合約等級</option>
+                <option v-for="level in 8" :key="level" :value="level">
+                  {{ level }} (要吃 {{ level + 8 }} 張)
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>總吃張數：</label>
               <input
                 type="number"
-                v-model.number="extraTricks"
+                v-model.number="totalTricks"
                 class="form-input"
-                :placeholder="isExtraTricks ? '0-7 張' : '0-16 張'"
+                placeholder="輸入拿破崙總共吃的張數"
                 :min="0"
-                :max="isExtraTricks ? 7 : 16"
+                :max="24"
                 required
               />
+              <div v-if="contractLevel && totalTricks" class="tricks-calculation">
+                <span class="calculation-text">
+                  {{ calculationText }}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -338,8 +349,8 @@ const authStore = useAuthStore();
 // 新增回合相關的響應式變數
 const napoleonId = ref<string>("");
 const secretaryId = ref<string>("");
-const extraTricks = ref(0);
-const isExtraTricks = ref(true); // true: 超吃張數, false: 缺少張數
+const contractLevel = ref<number | "">(""); // 1-8，代表要吃 9-16 張
+const totalTricks = ref<number | "">(""); // 拿破崙總共吃的張數
 const error = ref("");
 const loading = ref(false);
 
@@ -431,14 +442,9 @@ const canSubmit = computed(() => {
   // 檢查選取的玩家數量是否符合要求
   if (selectedPlayers.value.length !== currentRoundPlayerCount.value) return false;
 
-  // 驗證額外張數範圍
-  if (isExtraTricks.value) {
-    // 超吃張數：0-7
-    if (extraTricks.value < 0 || extraTricks.value > 7) return false;
-  } else {
-    // 缺少張數：0-16（會自動轉為負數）
-    if (extraTricks.value < 0 || extraTricks.value > 16) return false;
-  }
+  // 驗證合約等級和總吃張數
+  if (!contractLevel.value || contractLevel.value < 1 || contractLevel.value > 8) return false;
+  if (!totalTricks.value || totalTricks.value < 0 || totalTricks.value > 24) return false;
 
   return true;
 });
@@ -483,6 +489,27 @@ const editAvailableSecretaries = computed(() => {
   return editingRoundData.playerIds.filter((uid) => uid !== editRoundData.value.napoleonId);
 });
 
+// 計算超吃/缺少張數的計算屬性
+const calculatedExtraTricks = computed(() => {
+  if (!contractLevel.value || !totalTricks.value) return 0;
+  const requiredTricks = (contractLevel.value as number) + 8; // 要吃張數
+  return (totalTricks.value as number) - requiredTricks; // 正數=超吃，負數=缺少
+});
+
+// 計算顯示文字
+const calculationText = computed(() => {
+  if (!contractLevel.value || !totalTricks.value) return "";
+  const required = (contractLevel.value as number) + 8;
+  const diff = calculatedExtraTricks.value;
+  if (diff > 0) {
+    return `超吃 ${diff} 張 (需要 ${required} 張，實際吃了 ${totalTricks.value} 張)`;
+  } else if (diff < 0) {
+    return `缺少 ${Math.abs(diff)} 張 (需要 ${required} 張，實際吃了 ${totalTricks.value} 張)`;
+  } else {
+    return `剛好完成 (需要 ${required} 張，實際吃了 ${totalTricks.value} 張)`;
+  }
+});
+
 const previewScores = computed(() => {
   if (!canPreview.value || !gameStore.currentGame) return {};
 
@@ -490,18 +517,12 @@ const previewScores = computed(() => {
   const isDictator = secretaryId.value === "none";
   const secId = isDictator ? napoleonId.value : secretaryId.value;
 
-  // 計算實際的 extraTricks 值
-  let actualExtraTricks = extraTricks.value;
-  if (!isExtraTricks.value) {
-    actualExtraTricks = -Math.abs(extraTricks.value);
-  }
-
   try {
     return calculateRoundScores({
       contractType: isDictator ? "dictator" : "standard",
       napoleonId: napoleonId.value,
       secretaryId: secId,
-      extraTricks: actualExtraTricks,
+      extraTricks: calculatedExtraTricks.value,
       playerIds: selectedPlayers.value,
     });
   } catch {
@@ -509,11 +530,6 @@ const previewScores = computed(() => {
   }
 });
 
-function toggleTricksType() {
-  isExtraTricks.value = !isExtraTricks.value;
-  // 切換時重置輸入值
-  extraTricks.value = 0;
-}
 
 // 切換玩家選擇
 function togglePlayerSelection(playerId: string) {
@@ -575,18 +591,11 @@ async function submitRound() {
     const isDictator = secretaryId.value === "none";
     const secId = isDictator ? napoleonId.value : secretaryId.value;
 
-    // 根據當前模式調整 extraTricks 的值
-    let finalExtraTricks = extraTricks.value;
-    if (!isExtraTricks.value) {
-      // 如果是缺少張數模式，自動加上負號
-      finalExtraTricks = -Math.abs(extraTricks.value);
-    }
-
     await gameStore.addRound({
       napoleonId: napoleonId.value,
       secretaryId: secId,
       contractType: isDictator ? "dictator" : "standard",
-      extraTricks: finalExtraTricks,
+      extraTricks: calculatedExtraTricks.value,
       playerIds: selectedPlayers.value,
     });
 
@@ -598,7 +607,8 @@ async function submitRound() {
     // 重置表單
     napoleonId.value = "";
     secretaryId.value = "";
-    extraTricks.value = 0;
+    contractLevel.value = "";
+    totalTricks.value = "";
     error.value = "";
 
     console.log("回合新增成功");
@@ -1110,6 +1120,20 @@ async function saveEditBetAmount() {
 
 .tricks-help p {
   margin: 4px 0;
+}
+
+.tricks-calculation {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e1e5e9;
+}
+
+.calculation-text {
+  font-size: 13px;
+  color: #495057;
+  font-weight: 500;
 }
 
 .score-preview {
