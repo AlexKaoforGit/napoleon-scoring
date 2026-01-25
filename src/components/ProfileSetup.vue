@@ -111,7 +111,7 @@ async function checkAndRedirect() {
 }
 
 .profile-setup-card {
-  background: white;
+  background: var(--color-background);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   padding: 40px;
@@ -121,14 +121,14 @@ async function checkAndRedirect() {
 
 .profile-setup-card h2 {
   text-align: center;
-  color: #333;
+  color: var(--color-heading);
   margin-bottom: 16px;
   font-size: 28px;
 }
 
 .setup-description {
   text-align: center;
-  color: #666;
+  color: var(--color-text);
   margin-bottom: 30px;
   font-size: 16px;
   line-height: 1.5;
@@ -148,16 +148,18 @@ async function checkAndRedirect() {
 
 .form-group label {
   font-weight: 600;
-  color: #333;
+  color: var(--color-heading);
   font-size: 16px;
 }
 
 .form-input {
   padding: 14px 16px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 0.3s ease;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 .form-input:focus {
@@ -167,7 +169,7 @@ async function checkAndRedirect() {
 
 .input-help {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text);
   margin-top: 4px;
 }
 

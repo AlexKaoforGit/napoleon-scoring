@@ -134,7 +134,7 @@ function goToLogin() {
 }
 
 .register-card {
-  background: white;
+  background: var(--color-background);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   padding: 40px;
@@ -144,7 +144,7 @@ function goToLogin() {
 
 .register-card h2 {
   text-align: center;
-  color: #333;
+  color: var(--color-heading);
   margin-bottom: 30px;
   font-size: 24px;
 }
@@ -163,16 +163,18 @@ function goToLogin() {
 
 .form-group label {
   font-weight: 500;
-  color: #555;
+  color: var(--color-heading);
   font-size: 14px;
 }
 
 .form-input {
   padding: 12px 16px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 0.3s ease;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 .form-input:focus {
@@ -211,11 +213,11 @@ function goToLogin() {
 }
 
 .login-link {
-  color: #999;
+  color: var(--color-text);
   text-align: center;
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid #e1e5e9;
+  border-top: 1px solid var(--color-border);
 }
 
 .error-message {

@@ -557,7 +557,7 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 }
 
 .scoreboard-card {
-  background: white;
+  background: var(--color-background);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   padding: 40px;
@@ -571,11 +571,11 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
   align-items: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid #e1e5e9;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .scoreboard-header h2 {
-  color: #333;
+  color: var(--color-heading);
   font-size: 28px;
   margin: 0;
 }
@@ -587,16 +587,16 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 
 .current-game-section h3,
 .history-section h3 {
-  color: #333;
+  color: var(--color-heading);
   font-size: 20px;
   margin-bottom: 20px;
 }
 
 .game-card {
-  background: #f8f9fa;
+  background: var(--color-background-soft);
   border-radius: 8px;
   padding: 20px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -611,11 +611,11 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 
 .game-card.current {
   border-color: #28a745;
-  background: #d4edda;
+  background: rgba(40, 167, 69, 0.1);
 }
 
 .game-card.finished {
-  border-color: #6c757d;
+  border-color: var(--color-border);
 }
 
 .game-info {
@@ -633,8 +633,8 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 .bet-amount,
 .round-count,
 .finished-date {
-  background: white;
-  color: #333;
+  background: var(--color-background);
+  color: var(--color-text);
   padding: 4px 12px;
   border-radius: 16px;
   font-size: 12px;
@@ -696,8 +696,8 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 .no-games {
   text-align: center;
   padding: 40px;
-  color: #666;
-  background: #f8f9fa;
+  color: var(--color-text);
+  background: var(--color-background-soft);
   border-radius: 8px;
 }
 
@@ -730,13 +730,13 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 }
 
 .btn-secondary {
-  background: #f8f9fa;
-  color: #333;
-  border: 2px solid #e9ecef;
+  background: var(--color-background-soft);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
 }
 
 .btn-secondary:hover {
-  background: #e9ecef;
+  background: var(--color-border);
   transform: translateY(-2px);
 }
 
@@ -777,7 +777,7 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 }
 
 .modal-content {
-  background: white;
+  background: var(--color-background);
   border-radius: 12px;
   max-width: 800px;
   width: 100%;
@@ -790,12 +790,12 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
   justify-content: space-between;
   align-items: center;
   padding: 20px 30px;
-  border-bottom: 2px solid #e1e5e9;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--color-heading);
   font-size: 24px;
 }
 
@@ -814,7 +814,7 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 }
 
 .close-btn:hover {
-  color: #333;
+  color: var(--color-heading);
 }
 
 .modal-body {
@@ -830,7 +830,7 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #e1e5e9;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .detail-row:last-child {
@@ -865,6 +865,8 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
   border-radius: 4px;
   font-size: 14px;
   text-align: center;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 .edit-bet-input:focus {
@@ -934,7 +936,7 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 
 .final-scores h4 {
   margin: 0 0 16px 0;
-  color: #333;
+  color: var(--color-heading);
   font-size: 18px;
 }
 
@@ -950,7 +952,7 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
   align-items: center;
   padding: 12px 16px;
   border-radius: 8px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
 }
 
 .score-item.positive {
@@ -964,17 +966,17 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 }
 
 .score-item.neutral {
-  border-color: #6c757d;
-  background: #f8f9fa;
+  border-color: var(--color-border);
+  background: var(--color-background-soft);
 }
 
 .score-item .player-name {
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
 }
 
 .score-item .score {
-  color: #333;
+  color: var(--color-text);
   font-weight: bold;
   font-size: 16px;
 }
@@ -986,15 +988,15 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 
 .rounds-history h4 {
   margin: 0 0 16px 0;
-  color: #333;
+  color: var(--color-heading);
   font-size: 18px;
 }
 
 .no-rounds {
   text-align: center;
   padding: 20px;
-  color: #666;
-  background: #f8f9fa;
+  color: var(--color-text);
+  background: var(--color-background-soft);
   border-radius: 8px;
 }
 
@@ -1005,10 +1007,10 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 }
 
 .round-item {
-  background: #f8f9fa;
+  background: var(--color-background-soft);
   border-radius: 8px;
   padding: 16px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--color-border);
 }
 
 .round-header {
@@ -1017,12 +1019,12 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #e1e5e9;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .round-number {
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
   font-size: 14px;
 }
 
@@ -1050,7 +1052,7 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 }
 
 .round-info .value {
-  color: #333;
+  color: var(--color-text);
 }
 
 .round-scores {
@@ -1063,16 +1065,17 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  align-items: center;
   padding: 6px 8px;
-  background: white;
+  background: var(--color-background);
   border-radius: 4px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--color-border);
   font-size: 12px;
 }
 
 .round-score-item .player-name {
   font-weight: 500;
-  color: #333;
+  color: var(--color-text);
 }
 
 .round-score-item .score {
@@ -1093,7 +1096,7 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 }
 
 .leaderboard-section h3 {
-  color: #333;
+  color: var(--color-heading);
   font-size: 20px;
   margin-bottom: 20px;
 }
@@ -1105,7 +1108,7 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 .leaderboard-table table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--color-background);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -1136,19 +1139,19 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 .leaderboard-table td {
   padding: 12px 16px;
   text-align: left;
-  border-bottom: 1px solid #e1e5e9;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .leaderboard-table th {
   background: transparent;
-  color: #333;
+  color: var(--color-heading);
   font-weight: 600;
   font-size: 14px;
-  border-bottom: 2px solid #e1e5e9;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .leaderboard-table th.player-name {
-  color: #333;
+  color: var(--color-heading);
 }
 
 .leaderboard-table th.money,
@@ -1161,7 +1164,7 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 }
 
 .leaderboard-table tbody tr:hover {
-  background-color: #f8f9fa;
+  background-color: var(--color-background-soft);
 }
 
 .leaderboard-table tbody tr.current-user-row {
@@ -1191,12 +1194,12 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 
 .rank-badge.gold {
   background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-  color: #333;
+  color: #333; /* Gold needs dark text */
 }
 
 .rank-badge.silver {
   background: linear-gradient(135deg, #c0c0c0 0%, #e5e5e5 100%);
-  color: #333;
+  color: #333; /* Silver needs dark text */
 }
 
 .rank-badge.bronze {

@@ -271,7 +271,7 @@ async function checkPlayersOngoingGames(): Promise<{ hasOngoing: boolean; player
 }
 
 .setup-card {
-  background: white;
+  background: var(--color-background);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   padding: 40px;
@@ -281,7 +281,7 @@ async function checkPlayersOngoingGames(): Promise<{ hasOngoing: boolean; player
 
 .setup-card h2 {
   text-align: center;
-  color: #333;
+  color: var(--color-heading);
   margin-bottom: 30px;
   font-size: 24px;
 }
@@ -300,7 +300,7 @@ async function checkPlayersOngoingGames(): Promise<{ hasOngoing: boolean; player
 
 .form-group label {
   font-weight: 600;
-  color: #333;
+  color: var(--color-heading);
   font-size: 16px;
 }
 
@@ -312,8 +312,8 @@ async function checkPlayersOngoingGames(): Promise<{ hasOngoing: boolean; player
 }
 
 .btn-select-all {
-  background: #e1e5e9;
-  color: #333;
+  background: var(--color-border);
+  color: var(--color-text);
   border: none;
   padding: 8px 12px;
   border-radius: 6px;
@@ -333,7 +333,7 @@ async function checkPlayersOngoingGames(): Promise<{ hasOngoing: boolean; player
   gap: 12px;
   max-height: 300px;
   overflow-y: auto;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   padding: 12px;
 }
@@ -343,16 +343,16 @@ async function checkPlayersOngoingGames(): Promise<{ hasOngoing: boolean; player
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: white;
+  background: var(--color-background);
 }
 
 .player-option:hover {
   border-color: #667eea;
-  background: #f8f9ff;
+  background: var(--color-background-soft);
 }
 
 .player-option.selected {
@@ -376,7 +376,7 @@ async function checkPlayersOngoingGames(): Promise<{ hasOngoing: boolean; player
 
 .player-name {
   font-weight: 500;
-  color: #999;
+  color: var(--color-text);
 }
 
 .player-option.selected .player-name {
@@ -400,10 +400,10 @@ async function checkPlayersOngoingGames(): Promise<{ hasOngoing: boolean; player
 
 .selection-info {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text);
   text-align: center;
   padding: 8px;
-  background: #f8f9fa;
+  background: var(--color-background-soft);
   border-radius: 6px;
 }
 
@@ -420,10 +420,12 @@ async function checkPlayersOngoingGames(): Promise<{ hasOngoing: boolean; player
 
 .form-input {
   padding: 12px 16px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 0.3s ease;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 .form-input:focus {

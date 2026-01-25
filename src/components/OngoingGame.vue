@@ -795,7 +795,7 @@ async function saveEditBetAmount() {
 }
 
 .no-game-card {
-  background: white;
+  background: var(--color-background);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   padding: 40px;
@@ -805,19 +805,19 @@ async function saveEditBetAmount() {
 }
 
 .no-game-card h2 {
-  color: #333;
+  color: var(--color-heading);
   font-size: 28px;
   margin-bottom: 15px;
 }
 
 .no-game-card p {
-  color: #666;
+  color: var(--color-text);
   font-size: 18px;
   margin-bottom: 30px;
 }
 
 .game-info-card {
-  background: white;
+  background: var(--color-background);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   padding: 40px;
@@ -831,11 +831,11 @@ async function saveEditBetAmount() {
   align-items: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid #e1e5e9;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .game-header h2 {
-  color: #333;
+  color: var(--color-heading);
   font-size: 28px;
   margin: 0;
 }
@@ -847,7 +847,7 @@ async function saveEditBetAmount() {
 
 .bet-amount,
 .round-count {
-  background: #e3f2fd;
+  background: #e3f2fd; /* Keep specific color for emphasis, or change to var(--color-background-mute) if desired */
   color: #1976d2;
   padding: 8px 16px;
   border-radius: 20px;
@@ -889,7 +889,7 @@ async function saveEditBetAmount() {
 }
 
 .players-section h3 {
-  color: #333;
+  color: var(--color-heading);
   font-size: 20px;
   margin: 0;
 }
@@ -912,15 +912,15 @@ async function saveEditBetAmount() {
   gap: 6px;
   cursor: pointer;
   padding: 6px 10px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
   border-radius: 6px;
   transition: all 0.3s ease;
-  background: white;
+  background: var(--color-background);
 }
 
 .radio-option:hover {
   border-color: #667eea;
-  background: #f8f9ff;
+  background: var(--color-background-soft);
 }
 
 .radio-option input[type="radio"] {
@@ -935,19 +935,19 @@ async function saveEditBetAmount() {
 
 .radio-option:has(input[type="radio"]:checked) {
   border-color: #667eea;
-  background: #f8f9ff;
+  background: var(--color-background-mute);
 }
 
 .radio-label {
   font-size: 12px;
-  color: #333;
+  color: var(--color-text);
   cursor: pointer;
 }
 
 .selection-info {
   font-size: 12px;
-  color: #666;
-  background: #f8f9fa;
+  color: var(--color-text);
+  background: var(--color-background-soft);
   padding: 4px 8px;
   border-radius: 4px;
 }
@@ -959,11 +959,11 @@ async function saveEditBetAmount() {
 }
 
 .player-card {
-  background: #f8f9fa;
+  background: var(--color-background-soft);
   border-radius: 8px;
   padding: 16px;
   text-align: center;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -975,15 +975,15 @@ async function saveEditBetAmount() {
 }
 
 .player-card.disabled {
-  border-color: #e1e5e9;
-  background: #f8f9fa;
+  border-color: var(--color-border);
+  background: var(--color-background-soft);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .player-card.disabled:hover {
-  border-color: #e1e5e9;
-  background: #f8f9fa;
+  border-color: var(--color-border);
+  background: var(--color-background-soft);
   transform: none;
 }
 
@@ -1005,12 +1005,12 @@ async function saveEditBetAmount() {
 
 .player-name {
   font-weight: 600;
-  color: #333;
+  color: var(--color-heading);
   margin-bottom: 8px;
 }
 
 .player-score {
-  color: #999;
+  color: var(--color-text);
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 4px;
@@ -1026,20 +1026,20 @@ async function saveEditBetAmount() {
 
 .player-money {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text);
 }
 
 /* 新增回合表單樣式 */
 .round-input-section {
   margin-bottom: 40px;
   padding: 30px;
-  background: #f8f9fa;
+  background: var(--color-background-snow);
   border-radius: 12px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
 }
 
 .round-input-section h3 {
-  color: #333;
+  color: var(--color-heading);
   font-size: 20px;
   margin-bottom: 20px;
 }
@@ -1064,7 +1064,7 @@ async function saveEditBetAmount() {
 
 .form-group label {
   font-weight: 600;
-  color: #333;
+  color: var(--color-heading);
   font-size: 14px;
 }
 
@@ -1096,11 +1096,12 @@ async function saveEditBetAmount() {
 .form-select,
 .form-input {
   padding: 12px 16px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 0.3s ease;
-  background: white;
+  background: var(--color-background);
+  color: var(--color-text);
 }
 
 .form-select:focus,
@@ -1111,8 +1112,8 @@ async function saveEditBetAmount() {
 
 .tricks-help {
   font-size: 12px;
-  color: #666;
-  background: white;
+  color: var(--color-text);
+  background: var(--color-background);
   padding: 12px;
   border-radius: 6px;
   border: 1px solid #e1e5e9;
@@ -1125,27 +1126,27 @@ async function saveEditBetAmount() {
 .tricks-calculation {
   margin-top: 8px;
   padding: 8px 12px;
-  background: #f8f9fa;
+  background: var(--color-background-soft);
   border-radius: 6px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--color-border);
 }
 
 .calculation-text {
   font-size: 13px;
-  color: #495057;
+  color: var(--color-text);
   font-weight: 500;
 }
 
 .score-preview {
-  background: white;
+  background: var(--color-background);
   border-radius: 8px;
   padding: 20px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
 }
 
 .score-preview h4 {
   margin: 0 0 16px 0;
-  color: #333;
+  color: var(--color-heading);
   font-size: 16px;
 }
 
@@ -1161,7 +1162,7 @@ async function saveEditBetAmount() {
   align-items: center;
   padding: 12px 16px;
   border-radius: 8px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
 }
 
 .score-item.positive {
@@ -1175,8 +1176,8 @@ async function saveEditBetAmount() {
 }
 
 .score-item.neutral {
-  border-color: #6c757d;
-  background: #f8f9fa;
+  border-color: var(--color-border);
+  background: var(--color-background-soft);
 }
 
 .score-item .player-name {
@@ -1206,7 +1207,7 @@ async function saveEditBetAmount() {
 }
 
 .rounds-section h3 {
-  color: #333;
+  color: var(--color-heading);
   font-size: 20px;
   margin-bottom: 20px;
 }
@@ -1214,8 +1215,8 @@ async function saveEditBetAmount() {
 .no-rounds {
   text-align: center;
   padding: 40px;
-  color: #666;
-  background: #f8f9fa;
+  color: var(--color-text);
+  background: var(--color-background-soft);
   border-radius: 8px;
 }
 
@@ -1226,10 +1227,10 @@ async function saveEditBetAmount() {
 }
 
 .round-item {
-  background: #f8f9fa;
+  background: var(--color-background-soft);
   border-radius: 8px;
   padding: 20px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--color-border);
 }
 
 .round-header {
@@ -1238,7 +1239,7 @@ async function saveEditBetAmount() {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e1e5e9;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .round-actions {
@@ -1321,9 +1322,9 @@ async function saveEditBetAmount() {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: white;
+  background: var(--color-background);
   border-radius: 6px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--color-border);
 }
 
 .round-score-item .player-name {
@@ -1346,7 +1347,7 @@ async function saveEditBetAmount() {
 
 /* 編輯表單樣式 */
 .round-edit-form {
-  background: #f8f9fa;
+  background: var(--color-background-soft);
   border: 2px solid #667eea;
   border-radius: 8px;
   padding: 20px;
@@ -1382,7 +1383,7 @@ async function saveEditBetAmount() {
 }
 
 .modal-content {
-  background: white;
+  background: var(--color-background);
   border-radius: 12px;
   max-width: 400px;
   width: 100%;
@@ -1394,12 +1395,12 @@ async function saveEditBetAmount() {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e1e5e9;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--color-heading);
   font-size: 18px;
 }
 
@@ -1418,7 +1419,7 @@ async function saveEditBetAmount() {
 }
 
 .close-btn:hover {
-  color: #333;
+  color: var(--color-heading);
 }
 
 .modal-body {

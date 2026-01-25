@@ -4,10 +4,12 @@ import { useGameStore } from "@/stores/gameStore";
 import { useRouter } from "vue-router";
 import { ref, onMounted, onUnmounted, watch, computed } from "vue";
 import Swal from "sweetalert2";
+import { useTheme } from "@/composables/useTheme";
 
 const authStore = useAuthStore();
 const gameStore = useGameStore();
 const router = useRouter();
+const themeStore = useTheme();
 
 // 從環境變數讀取版本號
 const appVersion = __APP_VERSION__;
@@ -251,6 +253,7 @@ function handleClickOutside(event: Event) {
 
 onMounted(async () => {
   document.addEventListener("click", handleClickOutside);
+  themeStore.initTheme();
 
   // 如果用戶已登入，載入用戶資料
   if (authStore.user) {
@@ -296,6 +299,11 @@ onUnmounted(() => {
               <i class="bi bi-arrow-clockwise"></i>
             </button>
 
+            <!-- 桌面版深色模式切換 -->
+            <button @click="themeStore.toggleTheme()" class="theme-btn desktop-only" :title="themeStore.theme.value === 'dark' ? '切換至亮色模式' : '切換至深色模式'">
+              <i class="bi" :class="themeStore.theme.value === 'dark' ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
+            </button>
+
             <!-- 桌面版用戶選單 -->
             <div class="user-menu-container desktop-only">
               <button
@@ -325,6 +333,11 @@ onUnmounted(() => {
                 </button>
               </div>
             </div>
+
+            <!-- 手機版深色模式切換 -->
+            <button @click="themeStore.toggleTheme()" class="theme-btn mobile-only" :title="themeStore.theme.value === 'dark' ? '切換至亮色模式' : '切換至深色模式'">
+              <i class="bi" :class="themeStore.theme.value === 'dark' ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
+            </button>
 
             <!-- 手機版重新整理按鈕 -->
             <button @click="refreshPage" class="refresh-btn mobile-only" title="重新整理">
@@ -611,7 +624,8 @@ body {
   gap: 16px;
 }
 
-.refresh-btn {
+.refresh-btn,
+.theme-btn {
   background: none;
   border: none;
   display: flex;
@@ -625,24 +639,28 @@ body {
   color: #666;
 }
 
-.refresh-btn:hover {
+.refresh-btn:hover,
+.theme-btn:hover {
   background: #f8f9fa;
   color: #333;
 }
 
-.refresh-btn i {
+.refresh-btn i,
+.theme-btn i {
   font-size: 16px;
 }
 
 /* 手機版重新整理按鈕樣式調整 */
 @media (max-width: 768px) {
-  .refresh-btn.mobile-only {
+  .refresh-btn.mobile-only,
+  .theme-btn.mobile-only {
     width: 40px;
     height: 40px;
     padding: 8px;
   }
 
-  .refresh-btn.mobile-only i {
+  .refresh-btn.mobile-only i,
+  .theme-btn.mobile-only i {
     font-size: 18px;
   }
 }

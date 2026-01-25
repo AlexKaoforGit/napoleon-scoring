@@ -263,7 +263,7 @@ const selectedMode = ref("five"); // 預設顯示五人模式
 }
 
 .rules-card {
-  background: white;
+  background: var(--color-background);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   padding: 40px;
@@ -274,7 +274,7 @@ const selectedMode = ref("five"); // 預設顯示五人模式
 
 .rules-card h1 {
   text-align: center;
-  color: #333;
+  color: var(--color-heading);
   margin-bottom: 30px;
   font-size: 28px;
   font-weight: 700;
@@ -293,15 +293,15 @@ const selectedMode = ref("five"); // 預設顯示五人模式
   gap: 8px;
   cursor: pointer;
   padding: 8px 16px;
-  border: 2px solid #e1e5e9;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   transition: all 0.3s ease;
-  background: white;
+  background: var(--color-background);
 }
 
 .radio-option:hover {
   border-color: #667eea;
-  background: #f8f9ff;
+  background: var(--color-background-soft);
 }
 
 .radio-option input[type="radio"] {
@@ -316,12 +316,12 @@ const selectedMode = ref("five"); // 預設顯示五人模式
 
 .radio-option:has(input[type="radio"]:checked) {
   border-color: #667eea;
-  background: #f8f9ff;
+  background: var(--color-background-soft);
 }
 
 .radio-label {
   font-size: 16px;
-  color: #333;
+  color: var(--color-text);
   cursor: pointer;
   font-weight: 500;
 }
@@ -331,7 +331,7 @@ const selectedMode = ref("five"); // 預設顯示五人模式
 }
 
 .rules-section p {
-  color: black;
+  color: var(--color-text);
 }
 
 .rules-section h2 {
@@ -344,7 +344,7 @@ const selectedMode = ref("five"); // 預設顯示五人模式
 }
 
 .rule-description {
-  color: #666;
+  color: var(--color-text);
   font-style: italic;
   margin-bottom: 20px;
   font-size: 16px;
@@ -353,13 +353,13 @@ const selectedMode = ref("five"); // 預設顯示五人模式
 .rule-subsection {
   margin-bottom: 24px;
   padding: 20px;
-  background: #f8f9ff;
+  background: var(--color-background-soft);
   border-radius: 8px;
   border-left: 4px solid #667eea;
 }
 
 .rule-subsection h3 {
-  color: #333;
+  color: var(--color-heading);
   font-size: 20px;
   margin-bottom: 16px;
   font-weight: 600;
@@ -388,7 +388,7 @@ const selectedMode = ref("five"); // 預設顯示五人模式
 }
 
 .rule-subsection ul li strong {
-  color: #333;
+  color: var(--color-heading);
   font-weight: 600;
 }
 
@@ -407,18 +407,18 @@ const selectedMode = ref("five"); // 預設顯示五人模式
 }
 
 .example-subsection h3 {
-  color: #333;
+  color: var(--color-heading);
   font-size: 20px;
   margin-bottom: 16px;
   font-weight: 600;
 }
 
 .example-item {
-  background: #f8f9ff;
+  background: var(--color-background-soft);
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 16px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--color-border);
 }
 
 .example-item h4 {
@@ -437,7 +437,7 @@ const selectedMode = ref("five"); // 預設顯示五人模式
   margin-bottom: 8px;
   padding-left: 20px;
   position: relative;
-  color: #555;
+  color: var(--color-text);
   font-size: 16px;
 }
 
@@ -449,7 +449,7 @@ const selectedMode = ref("five"); // 預設顯示五人模式
 }
 
 .example-item ul li strong {
-  color: #333;
+  color: var(--color-heading);
   font-weight: 600;
 }
 
