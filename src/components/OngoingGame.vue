@@ -325,7 +325,7 @@
         <button @click="openFinishGameConfirm" class="btn btn-danger" :disabled="loading">
           {{ loading ? "處理中..." : "結束牌局" }}
         </button>
-        <button @click="goToScoreboard" class="btn btn-secondary">查看歷史戰績</button>
+        <button @click="goToScoreboard" class="btn btn-secondary">查看歷史總戰績</button>
       </div>
     </div>
 

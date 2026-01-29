@@ -363,7 +363,8 @@ onUnmounted(() => {
         <div class="nav-menu desktop-only">
           <router-link to="/setup" class="nav-link">新牌局</router-link>
           <router-link to="/ongoing" class="nav-link">進行中</router-link>
-          <router-link to="/scoreboard" class="nav-link">歷史戰績</router-link>
+          <router-link to="/scoreboard" class="nav-link">歷史總戰績</router-link>
+          <router-link to="/leaderboard" class="nav-link">賽季排行榜</router-link>
           <router-link to="/rules" class="nav-link">計分規則</router-link>
           <router-link v-if="isAdmin" to="/admin-setup" class="nav-link">管理員設定</router-link>
         </div>
@@ -394,7 +395,11 @@ onUnmounted(() => {
               </router-link>
               <router-link to="/scoreboard" class="mobile-menu-item" @click="closeModals">
                 <i class="bi bi-trophy"></i>
-                歷史戰績
+                歷史總戰績
+              </router-link>
+              <router-link to="/leaderboard" class="mobile-menu-item" @click="closeModals">
+                <i class="bi bi-bar-chart"></i>
+                賽季排行榜
               </router-link>
               <router-link to="/rules" class="mobile-menu-item" @click="closeModals">
                 <i class="bi bi-book"></i>

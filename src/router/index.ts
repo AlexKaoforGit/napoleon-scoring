@@ -53,6 +53,13 @@ const router = createRouter({
       component: () => import("@/components/AdminSetup.vue"),
       meta: { requiresAuth: true },
     },
+
+    {
+      path: "/leaderboard",
+      name: "season-leaderboard",
+      component: () => import("@/views/SeasonLeaderboard.vue"),
+      meta: { requiresAuth: false },
+    },
   ],
 });
 

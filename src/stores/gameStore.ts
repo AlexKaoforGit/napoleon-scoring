@@ -28,6 +28,7 @@ export interface Game {
   status: "ongoing" | "finished";
   createdAt: Date;
   finishedAt?: Date;
+  seasonId?: string; // Optional season ID
 }
 
 export interface Round {
@@ -116,19 +117,24 @@ export const useGameStore = defineStore("game", () => {
       if (playerIds.length < 4) {
         throw new Error("至少需要選擇四位玩家");
       }
+
+      // Check for active season
+      let seasonId = null;
+      try {
+        const seasonsRef = collection(db, "seasons");
+        const q = query(seasonsRef, where("isActive", "==", true));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          seasonId = querySnapshot.docs[0].id;
+        }
+      } catch (e) {
+        console.error("Failed to check active season when creating game", e);
+      }
+
       const scores: Record<string, number> = {};
       playerIds.forEach((id) => (scores[id] = 0));
-      const gameDoc = await addDoc(collection(db, "games"), {
-        hostId: playerIds[0], // 例如第一位為開局者
-        players: playerIds,
-        playerCount: playerIds.length, // 添加玩家數量記錄
-        betAmount,
-        scores,
-        status: "ongoing",
-        createdAt: new Date(),
-      });
-      currentGame.value = {
-        id: gameDoc.id,
+
+      const newGameData: any = {
         hostId: playerIds[0],
         players: playerIds,
         playerCount: playerIds.length,
@@ -136,6 +142,18 @@ export const useGameStore = defineStore("game", () => {
         scores,
         status: "ongoing",
         createdAt: new Date(),
+      };
+
+      if (seasonId) {
+        newGameData.seasonId = seasonId;
+      }
+
+      const gameDoc = await addDoc(collection(db, "games"), newGameData);
+
+      currentGame.value = {
+        id: gameDoc.id,
+        ...newGameData,
+        createdAt: newGameData.createdAt, // Ensure date obj
       };
       currentRounds.value = [];
     } catch (error: any) {

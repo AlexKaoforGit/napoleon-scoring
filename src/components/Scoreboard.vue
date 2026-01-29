@@ -10,36 +10,10 @@
       <div class="leaderboard-section">
         <h3>總分排行榜</h3>
         <div class="leaderboard-table">
-          <table>
-            <thead>
-              <tr>
-                <th class="rank">#</th>
-                <th class="player-name">玩家</th>
-                <th class="score">總分</th>
-                <th class="money">總金額</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(player, index) in sortedPlayers"
-                :key="player.uid"
-                :class="getRowClass(player.uid)"
-              >
-                <td class="rank">
-                  <span class="rank-badge" :class="getRankClass(index)">
-                    {{ index + 1 }}
-                  </span>
-                </td>
-                <td class="player-name">{{ getUserName(player.uid) }}</td>
-                <td class="score" :class="getScoreClass(player.totalScore)">
-                  {{ player.totalScore }}
-                </td>
-                <td class="money" :class="getMoneyClass(player.totalMoney)">
-                  {{ formatMoney(player.totalMoney) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <LeaderboardTable 
+            :players="formattedPlayers"
+            :currentUserId="authStore.user?.uid"
+          />
         </div>
       </div>
 
@@ -246,6 +220,7 @@ import type { Game, Round } from "@/stores/gameStore";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import Swal from "sweetalert2";
+import LeaderboardTable from "@/components/LeaderboardTable.vue";
 
 const router = useRouter();
 const gameStore = useGameStore();
@@ -283,6 +258,15 @@ const sortedPlayers = computed(() => {
 
   // 轉換為陣列並排序
   return Array.from(playerStats.values()).sort((a, b) => b.totalScore - a.totalScore);
+});
+
+const formattedPlayers = computed(() => {
+    return sortedPlayers.value.map(player => ({
+        id: player.uid,
+        name: getUserName(player.uid),
+        totalScore: player.totalScore,
+        totalMoney: player.totalMoney
+    }));
 });
 
 // 儲存每個牌局的回合數
@@ -375,25 +359,11 @@ function getScoreClass(score: number): string {
   return "neutral";
 }
 
-function getMoneyClass(money: number): string {
-  if (money > 0) return "positive";
-  if (money < 0) return "negative";
-  return "neutral";
-}
 
-function getRowClass(uid: string): string {
-  if (uid === authStore.user?.uid) {
-    return "current-user-row";
-  }
-  return "";
-}
 
-function getRankClass(index: number): string {
-  if (index === 0) return "gold";
-  if (index === 1) return "silver";
-  if (index === 2) return "bronze";
-  return "normal";
-}
+
+
+
 
 function getWinnerName(game: Game): string {
   const winnerId = game.players.reduce((winner, playerId) =>
@@ -1101,154 +1071,6 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
   margin-bottom: 20px;
 }
 
-.leaderboard-table {
-  overflow-x: auto;
-}
-
-.leaderboard-table table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--color-background);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  table-layout: fixed;
-}
-
-.leaderboard-table th.rank,
-.leaderboard-table td.rank {
-  width: 60px;
-}
-
-.leaderboard-table th.player-name,
-.leaderboard-table td.player-name {
-  width: 200px;
-}
-
-.leaderboard-table th.score,
-.leaderboard-table td.score {
-  width: 80px;
-}
-
-.leaderboard-table th.money,
-.leaderboard-table td.money {
-  width: 120px;
-}
-
-.leaderboard-table th,
-.leaderboard-table td {
-  padding: 12px 16px;
-  text-align: left;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.leaderboard-table th {
-  background: transparent;
-  color: var(--color-heading);
-  font-weight: 600;
-  font-size: 14px;
-  border-bottom: 2px solid var(--color-border);
-}
-
-.leaderboard-table th.player-name {
-  color: var(--color-heading);
-}
-
-.leaderboard-table th.money,
-.leaderboard-table th.rank {
-  font-size: 14px;
-}
-
-.leaderboard-table tbody tr {
-  transition: background-color 0.2s ease;
-}
-
-.leaderboard-table tbody tr:hover {
-  background-color: var(--color-background-soft);
-}
-
-.leaderboard-table tbody tr.current-user-row {
-  background: linear-gradient(90deg, #e3f2fd 0%, #bbdefb 100%);
-  font-weight: bold;
-  color: #333;
-  border-left: 4px solid #1976d2;
-}
-
-.rank {
-  width: 50px;
-  text-align: center;
-}
-
-.rank-badge {
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
-  color: white;
-}
-
-.rank-badge.gold {
-  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-  color: #333; /* Gold needs dark text */
-}
-
-.rank-badge.silver {
-  background: linear-gradient(135deg, #c0c0c0 0%, #e5e5e5 100%);
-  color: #333; /* Silver needs dark text */
-}
-
-.rank-badge.bronze {
-  background: linear-gradient(135deg, #cd7f32 0%, #daa520 100%);
-}
-
-.rank-badge.normal {
-  background: #6c757d;
-}
-
-.leaderboard-table .player-name {
-  font-weight: 600;
-  color: #333;
-}
-
-.leaderboard-table .score {
-  font-weight: bold;
-  font-size: 16px;
-}
-
-.leaderboard-table .score.positive {
-  color: #28a745;
-}
-
-.leaderboard-table .score.negative {
-  color: #dc3545;
-}
-
-.leaderboard-table .score.neutral {
-  color: #6c757d;
-}
-
-.leaderboard-table .money {
-  font-weight: bold;
-  font-size: 16px;
-}
-
-.leaderboard-table .money.positive {
-  color: #28a745;
-}
-
-.leaderboard-table .money.negative {
-  color: #dc3545;
-}
-
-.leaderboard-table .money.neutral {
-  color: #6c757d;
-}
-
 @media (max-width: 768px) {
   .scoreboard-container {
     padding: 10px;
@@ -1364,67 +1186,6 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
     grid-row: 2;
   }
 
-  .leaderboard-table {
-    overflow-x: hidden;
-  }
-
-  .leaderboard-table table {
-    width: 100%;
-    table-layout: fixed;
-  }
-
-  .leaderboard-table th.rank,
-  .leaderboard-table td.rank {
-    width: 35px !important;
-  }
-
-  .leaderboard-table th.player-name,
-  .leaderboard-table td.player-name {
-    width: 125px !important;
-  }
-
-  .leaderboard-table th.score,
-  .leaderboard-table td.score {
-    width: 60px !important;
-  }
-
-  .leaderboard-table th.money,
-  .leaderboard-table td.money {
-    width: 80px !important;
-  }
-
-  .leaderboard-table .player-name {
-    max-width: 125px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 14px;
-  }
-
-  .leaderboard-table th,
-  .leaderboard-table td {
-    padding: 10px 8px;
-    font-size: 14px;
-  }
-
-  .rank {
-    width: 35px !important;
-  }
-
-  .rank-badge {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
-  }
-
-  .leaderboard-table .score {
-    font-size: 14px;
-  }
-
-  .leaderboard-table .money {
-    font-size: 14px;
-  }
-
   .game-info {
     flex-direction: column;
     gap: 8px;
@@ -1436,72 +1197,6 @@ async function updateGameBetAmount(gameId: string, newBetAmount: number) {
 
   .game-info .value {
     font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  .scoreboard-card {
-    padding: 25px 15px;
-  }
-
-  .scoreboard-header {
-    gap: 12px;
-  }
-
-  .scoreboard-header h2 {
-    font-size: 20px;
-    white-space: nowrap;
-  }
-
-  .btn-primary {
-    padding: 10px 14px;
-    font-size: 13px;
-    white-space: nowrap;
-    min-width: auto;
-  }
-
-  .game-card {
-    padding: 15px;
-  }
-
-  .leaderboard-table th,
-  .leaderboard-table td {
-    padding: 8px 6px;
-    font-size: 12px;
-  }
-
-  .rank {
-    width: 30px !important;
-  }
-
-  .rank-badge {
-    width: 24px;
-    height: 24px;
-    font-size: 11px;
-  }
-
-  .leaderboard-table th.rank,
-  .leaderboard-table td.rank {
-    width: 30px !important;
-  }
-
-  .leaderboard-table th.player-name,
-  .leaderboard-table td.player-name {
-    width: 105px !important;
-  }
-
-  .leaderboard-table th.score,
-  .leaderboard-table td.score {
-    width: 50px !important;
-  }
-
-  .leaderboard-table th.money,
-  .leaderboard-table td.money {
-    width: 70px !important;
-  }
-
-  .leaderboard-table .player-name {
-    max-width: 105px;
   }
 }
 </style>

@@ -57,6 +57,20 @@ service cloud.firestore {
       }
     }
     
+
+    // 賽季集合規則
+    match /seasons/{seasonId} {
+        // 允許任何已登入用戶讀取賽季資料
+        allow read: if request.auth != null;
+        
+        // 只有管理員可以創建和修改賽季
+        allow create, update: if request.auth != null && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+
+        // 不允許刪除賽季 (或者僅限管理員)
+        allow delete: if false; 
+    }
+
     // 保留原有的 todos 規則（如果需要）
     match /todos/{todoId} {
       allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
